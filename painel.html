@@ -37,11 +37,11 @@
 
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
   <script>
-    // Configuracao embutida — nao precisa de arquivo config.yml separado
     window.CMS_MANUAL_INIT = true;
   </script>
   <script>
-    const config = {
+    (function () {
+      var config = {
   "backend": {
     "name": "git-gateway",
     "branch": "main"
@@ -216,18 +216,51 @@
     }
   ]
 };
-    function pronto() { const el = document.getElementById('boasVindas'); if (el) el.remove(); }
-    if (window.netlifyIdentity) {
-      netlifyIdentity.on('init', user => { if (user) pronto(); });
-      netlifyIdentity.on('login', () => { pronto(); location.reload(); });
-      netlifyIdentity.on('logout', () => location.reload());
-      // Abre sozinho quando a pessoa chega pelo link do convite ou de recuperacao de senha
-      const h = window.location.hash || '';
-      if (h.indexOf('invite_token') > -1 || h.indexOf('recovery_token') > -1) {
-        netlifyIdentity.open();
+
+      function esconderBoasVindas() {
+        var el = document.getElementById('boasVindas');
+        if (el) el.remove();
       }
-    }
-    if (window.CMS) { CMS.init({ config }); }
+
+      var jaIniciou = false;
+      function iniciarCMS() {
+        if (jaIniciou || !window.CMS) return;
+        jaIniciou = true;
+        esconderBoasVindas();
+        window.CMS.init({ config: config });
+      }
+
+      // Limpa o token do endereco para nao reabrir o login em laco
+      function limparToken() {
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+      }
+
+      if (window.netlifyIdentity) {
+        var hash = window.location.hash || '';
+        var temToken = hash.indexOf('invite_token') > -1
+                    || hash.indexOf('recovery_token') > -1
+                    || hash.indexOf('confirmation_token') > -1;
+
+        netlifyIdentity.on('init', function (user) {
+          if (user) { iniciarCMS(); }
+          else if (temToken) { netlifyIdentity.open(); }
+        });
+
+        // Sem recarregar a pagina: apenas limpa o token e abre o painel
+        netlifyIdentity.on('login', function () {
+          limparToken();
+          netlifyIdentity.close();
+          iniciarCMS();
+        });
+
+        netlifyIdentity.on('logout', function () {
+          limparToken();
+          window.location.reload();
+        });
+      }
+    })();
   </script>
 </body>
 </html>
