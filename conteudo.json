@@ -51,20 +51,5 @@
       "video": "https://www.youtube.com/watch?v=Ks0NeM3ForE"
     }
   ],
-  "eventos": [
-    {
-      "dia": "02",
-      "mes": "Ago",
-      "titulo": "Café da Manhã de Boas-Vindas",
-      "desc": "Para quem chegou há pouco — venha conhecer a história e o coração da igreja.",
-      "link": ""
-    },
-    {
-      "dia": "29",
-      "mes": "Ago",
-      "titulo": "Batismos na Vale",
-      "desc": "Celebração de novas histórias com Deus. Quer ser batizado? Fale com a gente.",
-      "link": "https://wa.me/5524998155508?text=Ol%C3%A1!%20Quero%20me%20batizar%20na%20Vale"
-    }
-  ]
+  "eventos": []
 }
