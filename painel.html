@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" translate="no">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
+  <meta name="google" content="notranslate" />
   <title>Painel — Igreja Batista Vale das Bênçãos</title>
   <link rel="icon" type="image/png" href="/logo-color.png" />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
@@ -26,7 +27,7 @@
     #netlify-identity-widget { z-index:100000 !important; }
   </style>
 </head>
-<body>
+<body class="notranslate">
   <div id="boasVindas">
     <img src="/logo-color.png" alt="Igreja Batista Vale das Bênçãos" />
     <h1>Painel do Site</h1>
@@ -35,7 +36,7 @@
     <small>Problemas para entrar? Fale com a HO Marketing.</small>
   </div>
 
-  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  <script src="https://unpkg.com/decap-cms@3.3.3/dist/decap-cms.js"></script>
   <script>
     window.CMS_MANUAL_INIT = true;
   </script>
@@ -164,7 +165,7 @@
               "label": "4. Agenda de Eventos",
               "label_singular": "Evento",
               "widget": "list",
-              "summary": "{{fields.dia}}/{{fields.mes}} — {{fields.titulo}}",
+              "summary": "{{fields.dia}}/{{fields.mes}} — {{fields.titulo}} {{fields.hora}}",
               "hint": "Os 3 primeiros aparecem na página inicial. Todos aparecem na Agenda.",
               "fields": [
                 {
@@ -191,6 +192,13 @@
                     "Nov",
                     "Dez"
                   ]
+                },
+                {
+                  "name": "hora",
+                  "label": "Horário",
+                  "widget": "string",
+                  "required": false,
+                  "hint": "Ex.: 19h30  ou  9h às 12h"
                 },
                 {
                   "name": "titulo",
