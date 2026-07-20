@@ -1,6 +1,11 @@
 [[redirects]]
   from = "/admin"
-  to = "/admin/index.html"
+  to = "/painel.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin/*"
+  to = "/painel.html"
   status = 200
 
 [[headers]]

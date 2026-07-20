@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Painel — Igreja Batista Vale das Bênçãos</title>
+  <link rel="icon" type="image/png" href="/logo-color.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <style>
+    :root { --verde:#578A28; --ouro:#F0A500; --cafe:#4A392A; --creme:#FBF7ED; }
+    body { font-family:'Plus Jakarta Sans',system-ui,sans-serif; margin:0; }
+    #boasVindas { position:fixed; inset:0; z-index:9999; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:1.25rem; padding:2rem; text-align:center;
+      background:var(--creme); color:var(--cafe); }
+    #boasVindas img { width:110px; height:110px; }
+    #boasVindas h1 { font-size:1.6rem; font-weight:800; margin:0; }
+    #boasVindas p { margin:0; max-width:26rem; color:#6B5844; line-height:1.6; }
+    #boasVindas button { border:0; cursor:pointer; border-radius:999px; padding:1rem 2.5rem;
+      font-size:1rem; font-weight:700; color:var(--cafe); background:var(--ouro);
+      box-shadow:0 10px 25px -8px rgba(240,165,0,.6); transition:transform .2s, background .2s; }
+    #boasVindas button:hover { background:#FFD469; transform:translateY(-2px); }
+    #boasVindas small { color:#A08B76; }
+  </style>
+</head>
+<body>
+  <div id="boasVindas">
+    <img src="/logo-color.png" alt="Igreja Batista Vale das Bênçãos" />
+    <h1>Painel do Site</h1>
+    <p>Bem-vindo, equipe de mídia! Aqui você atualiza cultos, vídeos e eventos do site. É só entrar com seu e-mail e senha.</p>
+    <button onclick="netlifyIdentity.open()">Entrar no painel</button>
+    <small>Problemas para entrar? Fale com a HO Marketing.</small>
+  </div>
+
+  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  <script>
+    // Configuracao embutida — nao precisa de arquivo config.yml separado
+    window.CMS_MANUAL_INIT = true;
+  </script>
+  <script>
+    const config = {
+  "backend": {
+    "name": "git-gateway",
+    "branch": "main"
+  },
+  "locale": "pt",
+  "site_url": "/",
+  "logo_url": "/logo-color.png",
+  "publish_mode": "simple",
+  "media_folder": "assets/uploads",
+  "public_folder": "/assets/uploads",
+  "collections": [
+    {
+      "name": "site",
+      "label": "Conteúdo do Site",
+      "files": [
+        {
+          "name": "conteudo",
+          "label": "Editar conteúdo do site",
+          "file": "conteudo.json",
+          "description": "Edite abaixo e clique em Publicar. O site atualiza em poucos minutos.",
+          "fields": [
+            {
+              "name": "geral",
+              "label": "1. Vídeo em destaque e transmissão",
+              "widget": "object",
+              "fields": [
+                {
+                  "name": "destaque_titulo",
+                  "label": "Título do vídeo em destaque",
+                  "widget": "string"
+                },
+                {
+                  "name": "destaque_descricao",
+                  "label": "Descrição",
+                  "widget": "text"
+                },
+                {
+                  "name": "destaque_video",
+                  "label": "Link do vídeo (YouTube)",
+                  "widget": "string",
+                  "hint": "Cole o link completo. A imagem de capa é gerada automaticamente."
+                },
+                {
+                  "name": "link_ao_vivo",
+                  "label": "Link do culto ao vivo",
+                  "widget": "string",
+                  "hint": "Usado nos botões Ao Vivo do site."
+                }
+              ]
+            },
+            {
+              "name": "cultos",
+              "label": "2. Cultos e Horários",
+              "label_singular": "Culto",
+              "widget": "list",
+              "summary": "{{fields.dia}} — {{fields.nome}} ({{fields.hora}})",
+              "hint": "Arraste para reordenar. Aparecem na página inicial e na Agenda.",
+              "fields": [
+                {
+                  "name": "dia",
+                  "label": "Dia da semana",
+                  "widget": "string",
+                  "hint": "Ex.: Domingo, Quarta-feira"
+                },
+                {
+                  "name": "nome",
+                  "label": "Nome do culto",
+                  "widget": "string",
+                  "hint": "Ex.: Culto de Adoração"
+                },
+                {
+                  "name": "hora",
+                  "label": "Horário",
+                  "widget": "string",
+                  "hint": "Ex.: 19h  ou  9h & 19h"
+                },
+                {
+                  "name": "desc",
+                  "label": "Descrição curta",
+                  "widget": "text"
+                }
+              ]
+            },
+            {
+              "name": "mensagens",
+              "label": "3. Vídeos da página inicial",
+              "label_singular": "Vídeo",
+              "widget": "list",
+              "max": 3,
+              "summary": "{{fields.titulo}}",
+              "hint": "Até 3 vídeos. A capa vem automaticamente do link do YouTube.",
+              "fields": [
+                {
+                  "name": "tipo",
+                  "label": "Categoria",
+                  "widget": "string",
+                  "hint": "Ex.: Mensagem, Culto de Libertação"
+                },
+                {
+                  "name": "titulo",
+                  "label": "Título do vídeo",
+                  "widget": "string"
+                },
+                {
+                  "name": "sub",
+                  "label": "Legenda",
+                  "widget": "string",
+                  "required": false,
+                  "hint": "Ex.: Vídeo · 1h47"
+                },
+                {
+                  "name": "video",
+                  "label": "Link no YouTube",
+                  "widget": "string"
+                }
+              ]
+            },
+            {
+              "name": "eventos",
+              "label": "4. Agenda de Eventos",
+              "label_singular": "Evento",
+              "widget": "list",
+              "summary": "{{fields.dia}}/{{fields.mes}} — {{fields.titulo}}",
+              "hint": "Os 3 primeiros aparecem na página inicial. Todos aparecem na Agenda.",
+              "fields": [
+                {
+                  "name": "dia",
+                  "label": "Dia",
+                  "widget": "string",
+                  "hint": "Só o número. Ex.: 15"
+                },
+                {
+                  "name": "mes",
+                  "label": "Mês",
+                  "widget": "select",
+                  "options": [
+                    "Jan",
+                    "Fev",
+                    "Mar",
+                    "Abr",
+                    "Mai",
+                    "Jun",
+                    "Jul",
+                    "Ago",
+                    "Set",
+                    "Out",
+                    "Nov",
+                    "Dez"
+                  ]
+                },
+                {
+                  "name": "titulo",
+                  "label": "Nome do evento",
+                  "widget": "string"
+                },
+                {
+                  "name": "desc",
+                  "label": "Descrição",
+                  "widget": "text"
+                },
+                {
+                  "name": "link",
+                  "label": "Link de inscrição ou WhatsApp",
+                  "widget": "string",
+                  "required": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};
+    function pronto() { const el = document.getElementById('boasVindas'); if (el) el.remove(); }
+    if (window.netlifyIdentity) {
+      netlifyIdentity.on('init', user => { if (user) pronto(); });
+      netlifyIdentity.on('login', () => { pronto(); location.reload(); });
+      netlifyIdentity.on('logout', () => location.reload());
+    }
+    if (window.CMS) { CMS.init({ config }); }
+  </script>
+</body>
+</html>
