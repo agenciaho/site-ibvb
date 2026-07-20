@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agenda — Igreja Batista Vale das Bênçãos</title>
+  <meta name="description" content="Agenda de cultos, eventos e programações da Igreja Batista Vale das Bênçãos — Santa Cruz, Volta Redonda/RJ." />
+  <link rel="icon" type="image/png" href="assets/logo-color.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: {
+        verde: { 50:'#F1F7E8',100:'#DFEECB',300:'#A9D26B',400:'#8CC63F',500:'#6FA82F',600:'#578A28',700:'#3E7C2B',800:'#2F5E21',900:'#234718' },
+        ouro:  { 300:'#FFD469',400:'#F7BC2D',500:'#F0A500',600:'#D89400',700:'#B57B00' },
+        cafe:  { 300:'#A08B76',500:'#6B5844',700:'#4A392A',900:'#33271C' },
+        creme: { 50:'#FDFBF5',100:'#FBF7ED',200:'#F7F1E3',300:'#EFE5CF' },
+      },
+      fontFamily: { display:['Fraunces','serif'], sans:['"Plus Jakarta Sans"','system-ui','sans-serif'] },
+      borderRadius: { organic:'1.5rem' },
+    }}};
+  </script>
+  <style>
+    .reveal { opacity:0; transform:translateY(28px); transition:opacity .7s cubic-bezier(.22,.61,.36,1), transform .7s cubic-bezier(.22,.61,.36,1); }
+    .revealed { opacity:1; transform:none; }
+    .hover-lift { transition:transform .35s ease, box-shadow .35s ease; }
+    .hover-lift:hover { transform:translateY(-6px); box-shadow:0 18px 35px -12px rgba(51,39,28,.22); }
+    @media (prefers-reduced-motion: reduce) { .reveal { opacity:1; transform:none; transition:none; } }
+  </style>
+</head>
+
+<body class="bg-creme-100 font-sans text-cafe-700 antialiased">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-50 bg-creme-100/90 backdrop-blur-md border-b border-creme-300">
+    <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-8">
+      <a href="index.html" class="flex items-center gap-3">
+        <img src="assets/logo-color.png" alt="Logo Igreja Batista Vale das Bênçãos" class="h-12 w-12" />
+        <span class="leading-tight">
+          <span class="block font-display font-bold text-lg text-cafe-700">Vale das Bênçãos</span>
+          <span class="block text-[11px] uppercase tracking-widest text-verde-600 font-semibold">Igreja Batista</span>
+        </span>
+      </a>
+      <a href="index.html" class="inline-flex items-center gap-2 rounded-full border border-creme-300 bg-creme-50 px-5 py-2.5 text-sm font-bold text-cafe-700 transition hover:border-verde-400 hover:text-verde-700">
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 17l-5-5 5-5M18 12H6"/></svg>
+        Voltar ao site
+      </a>
+    </nav>
+  </header>
+
+  <!-- Hero da agenda -->
+  <section class="relative overflow-hidden bg-gradient-to-b from-verde-800 to-verde-600 text-creme-50">
+    <div class="relative mx-auto max-w-5xl px-6 pt-16 pb-28 text-center lg:pt-20 lg:pb-32">
+      <p class="mb-3 text-sm font-bold uppercase tracking-[0.2em] text-ouro-400">Agenda da Igreja</p>
+      <h1 class="font-display text-4xl font-bold lg:text-5xl">Nossos próximos encontros</h1>
+      <p class="mx-auto mt-4 max-w-2xl text-lg text-creme-200/85">Cultos, conferências, batismos e celebrações — guarde as datas e venha viver cada momento com a gente.</p>
+    </div>
+    <svg class="pointer-events-none absolute bottom-0 left-0 w-full text-creme-100" viewBox="0 0 1440 80" fill="currentColor" preserveAspectRatio="none" aria-hidden="true"><path d="M0,40 C360,80 720,0 1080,32 C1260,48 1380,56 1440,40 L1440,80 L0,80 Z"/></svg>
+  </section>
+
+  <!-- Programação fixa da semana -->
+  <section class="mx-auto max-w-7xl px-6 py-14">
+    <h2 class="font-display text-2xl font-bold text-cafe-900">Toda semana na Vale</h2>
+    <div id="cultosSemana" class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="rounded-organic bg-verde-700 p-5 text-creme-50"><p data-f="dia" class="text-xs font-bold uppercase tracking-widest text-verde-300">Domingo</p><p data-f="nome" class="mt-1 font-display text-lg font-bold">Consagração & Culto de Adoração</p><p data-f="hora" class="text-xl font-extrabold text-ouro-400">9h & 19h</p></div>
+      <div class="rounded-organic bg-cafe-700 p-5 text-creme-50"><p data-f="dia" class="text-xs font-bold uppercase tracking-widest text-cafe-300">Segunda-feira</p><p data-f="nome" class="mt-1 font-display text-lg font-bold">Culto de Oração</p><p data-f="hora" class="text-xl font-extrabold text-ouro-400">19h</p></div>
+      <div class="rounded-organic bg-verde-600 p-5 text-creme-50"><p data-f="dia" class="text-xs font-bold uppercase tracking-widest text-verde-100">Quarta-feira</p><p data-f="nome" class="mt-1 font-display text-lg font-bold">Consagração & Estudo da Palavra</p><p data-f="hora" class="text-xl font-extrabold text-ouro-400">8h & 19h30</p></div>
+      <div class="rounded-organic bg-verde-800 p-5 text-creme-50"><p data-f="dia" class="text-xs font-bold uppercase tracking-widest text-verde-300">Quinta-feira</p><p data-f="nome" class="mt-1 font-display text-lg font-bold">Culto de Libertação</p><p data-f="hora" class="text-xl font-extrabold text-ouro-400">19h30</p></div>
+    </div>
+  </section>
+
+  <!-- Eventos -->
+  <section class="mx-auto max-w-7xl px-6 pb-20">
+    <h2 class="font-display text-2xl font-bold text-cafe-900">Eventos especiais</h2>
+    <div id="agendaGrid" class="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <article class="flex gap-5 rounded-organic border border-creme-300 bg-creme-50 p-6 shadow-sm">
+        <div class="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-2xl bg-verde-600 text-creme-50"><span data-f="dia" class="text-2xl font-extrabold leading-none">02</span><span data-f="mes" class="text-[11px] font-bold uppercase">Ago</span></div>
+        <div><h3 data-f="titulo" class="font-display text-lg font-bold text-cafe-900">Café da Manhã de Boas-Vindas</h3><p data-f="desc" class="mt-1 text-sm text-cafe-500">Para quem chegou há pouco — venha conhecer a história e o coração da igreja.</p><a data-f="link" href="#" class="mt-2 inline-block text-sm font-bold text-ouro-600 hover:text-ouro-700">Saiba mais →</a></div>
+      </article>
+      <article class="flex gap-5 rounded-organic border border-creme-300 bg-creme-50 p-6 shadow-sm">
+        <div class="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-2xl bg-ouro-500 text-cafe-900"><span data-f="dia" class="text-2xl font-extrabold leading-none">15</span><span data-f="mes" class="text-[11px] font-bold uppercase">Ago</span></div>
+        <div><h3 data-f="titulo" class="font-display text-lg font-bold text-cafe-900">Conferência Vale de Bênçãos</h3><p data-f="desc" class="mt-1 text-sm text-cafe-500">Um final de semana de louvor, palavra e renovo para toda a família.</p><a data-f="link" href="#" class="mt-2 inline-block text-sm font-bold text-ouro-600 hover:text-ouro-700">Saiba mais →</a></div>
+      </article>
+      <article class="flex gap-5 rounded-organic border border-creme-300 bg-creme-50 p-6 shadow-sm">
+        <div class="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-2xl bg-cafe-700 text-creme-50"><span data-f="dia" class="text-2xl font-extrabold leading-none">29</span><span data-f="mes" class="text-[11px] font-bold uppercase">Ago</span></div>
+        <div><h3 data-f="titulo" class="font-display text-lg font-bold text-cafe-900">Batismos na Vale</h3><p data-f="desc" class="mt-1 text-sm text-cafe-500">Celebração de novas histórias com Deus. Quer ser batizado? Fale com a gente.</p><a data-f="link" href="https://wa.me/5524998155508?text=Ol%C3%A1!%20Quero%20me%20batizar%20na%20Vale" target="_blank" rel="noopener" class="mt-2 inline-block text-sm font-bold text-ouro-600 hover:text-ouro-700">Quero me batizar →</a></div>
+      </article>
+    </div>
+    <p class="mt-8 text-sm text-cafe-300">Datas sujeitas a alteração. Acompanhe também no <a href="https://www.instagram.com/ibvbsantacruzvr/" target="_blank" rel="noopener" class="font-bold text-verde-600 hover:text-verde-700">Instagram @ibvbsantacruzvr</a>.</p>
+  </section>
+
+  <!-- Footer compacto -->
+  <footer class="bg-cafe-900 py-10 text-center text-creme-200">
+    <img src="assets/logo-white.png" alt="" class="mx-auto h-16 w-16" />
+    <p class="mt-3 font-display font-bold text-creme-50">Ser Família, Ser Igreja, Ser Feliz.</p>
+    <p class="mt-2 text-sm text-creme-200/70">Rua Agmar Lopes Corrêa, 303 — Santa Cruz, Volta Redonda/RJ</p>
+    <p class="mt-4 text-xs text-creme-200/50">© 2026 Igreja Batista Vale das Bênçãos</p>
+  </footer>
+
+  <script>
+    // Conteúdo editado no painel /admin
+    (async () => {
+      try {
+        const c = await (await fetch('conteudo.json?v=' + Date.now())).json();
+
+        // Cultos da semana
+        const cultos = c.cultos || [];
+        const gc = document.getElementById('cultosSemana');
+        if (gc && cultos.length) {
+          const mc = [...gc.children];
+          gc.innerHTML = '';
+          cultos.forEach((x, i) => {
+            const card = mc[i % mc.length].cloneNode(true);
+            card.querySelector('[data-f="dia"]').textContent = x.dia || '';
+            card.querySelector('[data-f="nome"]').textContent = x.nome || '';
+            card.querySelector('[data-f="hora"]').textContent = x.hora || '';
+            card.classList.add('revealed');
+            gc.appendChild(card);
+          });
+        }
+
+        // Eventos
+        const rows = c.eventos || [];
+        if (!rows.length) return;
+        const grid = document.getElementById('agendaGrid');
+        const modelos = [...grid.children];
+        grid.innerHTML = '';
+        rows.forEach((x, i) => {
+          const card = modelos[i % modelos.length].cloneNode(true);
+          Object.entries({ dia: x.dia, mes: x.mes, titulo: x.titulo, desc: x.desc, link: x.link }).forEach(([campo, val]) => {
+            const el = card.querySelector(`[data-f="${campo}"]`);
+            if (!el || !val) return;
+            if (el.tagName === 'A') el.href = val;
+            else el.textContent = val;
+          });
+          card.classList.add('revealed');
+          grid.appendChild(card);
+        });
+      } catch (e) { console.warn('conteudo.json indisponível — usando conteúdo padrão.', e); }
+    })();
+
+    // Reveal ao rolar
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('revealed'); io.unobserve(e.target); } }), { threshold: 0.12 });
+    document.querySelectorAll('article, section h2, .rounded-organic').forEach(el => { el.classList.add('reveal','hover-lift'); io.observe(el); });
+  </script>
+</body>
+</html>

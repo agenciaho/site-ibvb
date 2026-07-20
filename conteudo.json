@@ -1,0 +1,24 @@
+{
+  "geral": {
+    "link_ao_vivo": "https://www.youtube.com/@ibvbsantacruz/live",
+    "destaque_titulo": "Jesus e a Multidão",
+    "destaque_descricao": "Acompanhe as mensagens e cultos da IBVB Santa Cruz no nosso canal do YouTube e caminhe com a gente na Palavra durante toda a semana.",
+    "destaque_video": "https://www.youtube.com/watch?v=W_3lAvN7JaY&t=998s"
+  },
+  "cultos": [
+    { "dia": "Domingo", "nome": "Consagração & Culto de Adoração", "hora": "9h & 19h", "desc": "Consagração pela manhã e, à noite, o nosso grande encontro de adoração com toda a família." },
+    { "dia": "Segunda-feira", "nome": "Culto de Oração", "hora": "19h", "desc": "Começamos a semana buscando a presença de Deus e orando uns pelos outros." },
+    { "dia": "Quarta-feira", "nome": "Consagração & Estudo da Palavra", "hora": "8h & 19h30", "desc": "Consagração pela manhã e, à noite, um mergulho profundo no ensino da Bíblia." },
+    { "dia": "Quinta-feira", "nome": "Culto de Libertação", "hora": "19h30", "desc": "Uma noite de fé, oração e vidas restauradas pelo poder de Deus." }
+  ],
+  "mensagens": [
+    { "tipo": "Mensagem", "titulo": "Encerramento do Mês da Família", "sub": "Vídeo", "video": "https://www.youtube.com/watch?v=uKkvLCBU7xk" },
+    { "tipo": "Rede de Mulheres", "titulo": "Manhã com Deus da Rede de Mulheres IBVB", "sub": "Vídeo · 1h47", "video": "https://www.youtube.com/watch?v=tr3CxrpA8ak" },
+    { "tipo": "Culto de Libertação", "titulo": "Culto de Libertação — 17/10/2024", "sub": "Vídeo · 1h49", "video": "https://www.youtube.com/watch?v=Ks0NeM3ForE" }
+  ],
+  "eventos": [
+    { "dia": "02", "mes": "Ago", "titulo": "Café da Manhã de Boas-Vindas", "desc": "Para quem chegou há pouco — venha conhecer a história e o coração da igreja.", "link": "" },
+    { "dia": "15", "mes": "Ago", "titulo": "Conferência Vale de Bênçãos", "desc": "Um final de semana de louvor, palavra e renovo para toda a família.", "link": "" },
+    { "dia": "29", "mes": "Ago", "titulo": "Batismos na Vale", "desc": "Celebração de novas histórias com Deus. Quer ser batizado? Fale com a gente.", "link": "https://wa.me/5524998155508?text=Ol%C3%A1!%20Quero%20me%20batizar%20na%20Vale" }
+  ]
+}
