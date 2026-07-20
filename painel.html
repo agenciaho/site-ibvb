@@ -25,6 +25,12 @@
     #boasVindas small { color:#A08B76; }
     /* A janela de login precisa ficar acima da tela de boas-vindas */
     #netlify-identity-widget { z-index:100000 !important; }
+
+    /* A biblioteca do painel exibe uma faixa de erro interna que nao afeta o
+       funcionamento, mas ocupa 400px no topo e empurra a barra de navegacao
+       para o meio da tela. Ocultamos a faixa e fixamos a barra no topo. */
+    #nc-root > [class*="ErrorBoundaryContainer"] { display:none !important; }
+    #nc-root > header[class*="AppHeader"] { top:0 !important; }
   </style>
 </head>
 <body class="notranslate">
