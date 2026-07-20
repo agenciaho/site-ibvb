@@ -22,6 +22,8 @@
       box-shadow:0 10px 25px -8px rgba(240,165,0,.6); transition:transform .2s, background .2s; }
     #boasVindas button:hover { background:#FFD469; transform:translateY(-2px); }
     #boasVindas small { color:#A08B76; }
+    /* A janela de login precisa ficar acima da tela de boas-vindas */
+    #netlify-identity-widget { z-index:100000 !important; }
   </style>
 </head>
 <body>
@@ -219,6 +221,11 @@
       netlifyIdentity.on('init', user => { if (user) pronto(); });
       netlifyIdentity.on('login', () => { pronto(); location.reload(); });
       netlifyIdentity.on('logout', () => location.reload());
+      // Abre sozinho quando a pessoa chega pelo link do convite ou de recuperacao de senha
+      const h = window.location.hash || '';
+      if (h.indexOf('invite_token') > -1 || h.indexOf('recovery_token') > -1) {
+        netlifyIdentity.open();
+      }
     }
     if (window.CMS) { CMS.init({ config }); }
   </script>
