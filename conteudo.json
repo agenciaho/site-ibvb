@@ -67,18 +67,18 @@
       "desc": "Um encontro de comunhão, crescimento espiritual e fortalecimento na fé.\nParticipe e viva momentos de unidade, amizade e propósito."
     },
     {
-      "dia": "15 e 16",
-      "mes": "Set",
-      "hora": "19h",
-      "titulo": "Congresso da Rede de Mulheres",
-      "desc": "Um chamado de Deus para mulheres viverem seu propósito, saindo do anonimato para o centro da Sua vontade."
-    },
-    {
       "dia": "12",
       "mes": "Set",
       "hora": "19:30",
       "titulo": "Bate-Papo Casais conectados",
       "desc": "Um encontro para fortalecer relacionamentos, compartilhar experiências e crescer juntos à luz da Palavra de Deus, construindo lares mais saudáveis e felizes."
+    },
+    {
+      "dia": "15 e 16",
+      "mes": "Set",
+      "hora": "19h",
+      "titulo": "Congresso da Rede de Mulheres",
+      "desc": "Um chamado de Deus para mulheres viverem seu propósito, saindo do anonimato para o centro da Sua vontade."
     }
   ]
 }
