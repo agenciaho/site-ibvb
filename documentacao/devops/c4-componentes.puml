@@ -32,6 +32,8 @@ Rel(panel, identity, "Autentica/publica", "HTTPS")
 Rel(panel, external, "Carrega Decap CMS", "HTTPS")
 Rel(home, external, "Carrega mídia/estilos", "HTTPS")
 
+footer Elabora por Ricardo Augusto <ricardoaugusto.sek@gmail.com> em 21/07/2026.
+
 SHOW_LEGEND()
 @enduml
 

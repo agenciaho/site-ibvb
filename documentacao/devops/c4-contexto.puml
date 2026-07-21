@@ -20,6 +20,7 @@ Rel(netlifyIdentity, git, "Lê e grava conteudo.json", "Git/HTTPS")
 Rel(site, midia, "Incorpora e direciona para conteúdo", "HTTPS")
 Rel(site, cdn, "Carrega estilos, fontes e scripts", "HTTPS")
 
+footer Elabora por Ricardo Augusto <ricardoaugusto.sek@gmail.com> em 21/07/2026.
 SHOW_LEGEND()
 @enduml
 

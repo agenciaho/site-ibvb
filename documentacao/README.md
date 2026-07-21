@@ -17,7 +17,11 @@ Os arquivos usam [C4-PlantUML](https://github.com/plantuml-stdlib/C4-PlantUML) p
 plantuml documentacao/devops/*.puml
 ```
 
-Também é possível usar uma extensão PlantUML no editor. A saída padrão é PNG ao lado de cada fonte; esses arquivos gerados não são necessários para executar o site.
+Também é possível usar uma extensão PlantUML no editor. A saída padrão é PNG ao lado de cada fonte; esses arquivos gerados não são necessários para executar o site. 
+
+Sugestão de extensão: 
+ - PlantUML  https://marketplace.visualstudio.com/items?itemName=jebbs.plantuml
+ - PlantUML Previewer https://marketplace.visualstudio.com/items?itemName=Mebrahtom.plantumlpreviewer
 
 ## Decisões arquiteturais
 
