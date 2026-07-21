@@ -53,14 +53,6 @@
   ],
   "eventos": [
     {
-      "dia": "15 e 16",
-      "mes": "Set",
-      "hora": "19h",
-      "titulo": "Congresso da Rede de Mulheres",
-      "desc": "Um chamado de Deus para mulheres viverem seu propósito, saindo do anonimato para o centro da Sua vontade.",
-      "telefone": "24 97403-5075"
-    },
-    {
       "titulo": "Congresso de Jovens e Adolescentes",
       "dia": "15 e 16",
       "mes": "Ago",
@@ -83,6 +75,14 @@
       "titulo": "Bate-Papo Casais conectados",
       "desc": "Um encontro para fortalecer relacionamentos, compartilhar experiências e crescer juntos à luz da Palavra de Deus, construindo lares mais saudáveis e felizes.",
       "telefone": "24 99901-5242"
+    },
+    {
+      "dia": "15 e 16",
+      "mes": "Set",
+      "hora": "19h",
+      "titulo": "Congresso da Rede de Mulheres",
+      "desc": "Um chamado de Deus para mulheres viverem seu propósito, saindo do anonimato para o centro da Sua vontade.",
+      "telefone": "24 97403-5075"
     }
   ]
 }
