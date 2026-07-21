@@ -77,15 +77,15 @@
     <div id="agendaGrid" class="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       <article class="flex gap-5 rounded-organic border border-creme-300 bg-creme-50 p-6 shadow-sm">
         <div class="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-2xl bg-verde-600 text-creme-50"><span data-f="dia" class="text-2xl font-extrabold leading-none">02</span><span data-f="mes" class="text-[11px] font-bold uppercase">Ago</span></div>
-        <div><h3 data-f="titulo" class="font-display text-lg font-bold text-cafe-900">Café da Manhã de Boas-Vindas</h3><p data-f="hora" class="mt-1 text-sm font-bold text-verde-600"></p><p data-f="desc" class="mt-1 text-sm text-cafe-500">Para quem chegou há pouco — venha conhecer a história e o coração da igreja.</p><a data-f="link" href="#" class="mt-2 inline-block text-sm font-bold text-ouro-600 hover:text-ouro-700">Saiba mais →</a></div>
+        <div><h3 data-f="titulo" class="font-display text-lg font-bold text-cafe-900">Café da Manhã de Boas-Vindas</h3><p data-f="hora" class="mt-1 text-sm font-bold text-verde-600"></p><p data-f="desc" class="mt-1 text-sm text-cafe-500">Para quem chegou há pouco — venha conhecer a história e o coração da igreja.</p><a data-f="link" href="#" class="mt-2 inline-block text-sm font-bold text-ouro-600 hover:text-ouro-700">Saber mais →</a></div>
       </article>
       <article class="flex gap-5 rounded-organic border border-creme-300 bg-creme-50 p-6 shadow-sm">
         <div class="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-2xl bg-ouro-500 text-cafe-900"><span data-f="dia" class="text-2xl font-extrabold leading-none">15</span><span data-f="mes" class="text-[11px] font-bold uppercase">Ago</span></div>
-        <div><h3 data-f="titulo" class="font-display text-lg font-bold text-cafe-900">Conferência Vale de Bênçãos</h3><p data-f="hora" class="mt-1 text-sm font-bold text-verde-600"></p><p data-f="desc" class="mt-1 text-sm text-cafe-500">Um final de semana de louvor, palavra e renovo para toda a família.</p><a data-f="link" href="#" class="mt-2 inline-block text-sm font-bold text-ouro-600 hover:text-ouro-700">Saiba mais →</a></div>
+        <div><h3 data-f="titulo" class="font-display text-lg font-bold text-cafe-900">Conferência Vale de Bênçãos</h3><p data-f="hora" class="mt-1 text-sm font-bold text-verde-600"></p><p data-f="desc" class="mt-1 text-sm text-cafe-500">Um final de semana de louvor, palavra e renovo para toda a família.</p><a data-f="link" href="#" class="mt-2 inline-block text-sm font-bold text-ouro-600 hover:text-ouro-700">Saber mais →</a></div>
       </article>
       <article class="flex gap-5 rounded-organic border border-creme-300 bg-creme-50 p-6 shadow-sm">
         <div class="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-2xl bg-cafe-700 text-creme-50"><span data-f="dia" class="text-2xl font-extrabold leading-none">29</span><span data-f="mes" class="text-[11px] font-bold uppercase">Ago</span></div>
-        <div><h3 data-f="titulo" class="font-display text-lg font-bold text-cafe-900">Batismos na Vale</h3><p data-f="hora" class="mt-1 text-sm font-bold text-verde-600"></p><p data-f="desc" class="mt-1 text-sm text-cafe-500">Celebração de novas histórias com Deus. Quer ser batizado? Fale com a gente.</p><a data-f="link" href="https://wa.me/5524998155508?text=Ol%C3%A1!%20Quero%20me%20batizar%20na%20Vale" target="_blank" rel="noopener" class="mt-2 inline-block text-sm font-bold text-ouro-600 hover:text-ouro-700">Quero me batizar →</a></div>
+        <div><h3 data-f="titulo" class="font-display text-lg font-bold text-cafe-900">Batismos na Vale</h3><p data-f="hora" class="mt-1 text-sm font-bold text-verde-600"></p><p data-f="desc" class="mt-1 text-sm text-cafe-500">Celebração de novas histórias com Deus. Quer ser batizado? Fale com a gente.</p><a data-f="link" href="#" target="_blank" rel="noopener" class="mt-2 inline-block text-sm font-bold text-ouro-600 hover:text-ouro-700">Saber mais →</a></div>
       </article>
     </div>
     <p class="mt-8 text-sm text-cafe-300">Datas sujeitas a alteração. Acompanhe também no <a href="https://www.instagram.com/ibvbsantacruzvr/" target="_blank" rel="noopener" class="font-bold text-verde-600 hover:text-verde-700">Instagram @ibvbsantacruzvr</a>.</p>
@@ -100,6 +100,17 @@
   </footer>
 
   <script>
+
+    // Monta o link do WhatsApp a partir do telefone digitado no painel.
+    // Aceita "24 99999-8888", "(24) 99999-8888", "+55 24 99999-8888" etc.
+    function linkWhatsapp(tel, evento) {
+      var d = String(tel || '').replace(/\D/g, '');
+      if (d.length < 10) return '';
+      if (d.length <= 11) d = '55' + d;             // sem codigo do pais
+      var msg = 'Ol\u00e1! Quero saber mais sobre: ' + (evento || 'o evento');
+      return 'https://wa.me/' + d + '?text=' + encodeURIComponent(msg);
+    }
+
     // Conteúdo editado no painel /admin
     (async () => {
       try {
@@ -129,12 +140,14 @@
         grid.innerHTML = '';
         rows.forEach((x, i) => {
           const card = modelos[i % modelos.length].cloneNode(true);
-          Object.entries({ dia: x.dia, mes: x.mes, hora: x.hora, titulo: x.titulo, desc: x.desc, link: x.link }).forEach(([campo, val]) => {
+          Object.entries({ dia: x.dia, mes: x.mes, hora: x.hora, titulo: x.titulo, desc: x.desc, link: linkWhatsapp(x.telefone, x.titulo) }).forEach(([campo, val]) => {
             const el = card.querySelector(`[data-f="${campo}"]`);
             if (!el || !val) return;
             if (el.tagName === 'A') el.href = val;
             else el.textContent = val;
           });
+          const bt = card.querySelector('[data-f="link"]');
+          if (bt) bt.style.display = linkWhatsapp(x.telefone, x.titulo) ? '' : 'none';
           card.classList.add('revealed');
           grid.appendChild(card);
         });
