@@ -1,0 +1,11 @@
+.git
+.gitignore
+.codegraph
+.agents
+.codex
+documentacao
+README.md
+.env
+.env.example
+docker-compose.yml
+

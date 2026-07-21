@@ -1,0 +1,33 @@
+@startuml C4_Deployment_IBVB
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Deployment.puml
+
+title Implantação — Site IBVB
+
+Deployment_Node(client, "Dispositivo do usuário", "Navegador moderno") {
+  Container(browser, "Frontend IBVB", "HTML/CSS/JavaScript", "Executa a apresentação e integrações")
+}
+
+Deployment_Node(netlify, "Produção gerenciada", "Netlify") {
+  Container(netlifyStatic, "Publicação estática", "Netlify CDN", "HTML, JSON e imagens da branch main")
+  Container(identity, "Identity / Git Gateway", "Serviço Netlify", "Login e publicação editorial")
+}
+
+Deployment_Node(dockerHost, "Host alternativo", "Docker Engine + Compose") {
+  Deployment_Node(container, "site-ibvb", "nginx:alpine") {
+    Container(nginx, "Servidor estático", "Nginx", "HTML, JSON, imagens, redirects e cache")
+  }
+}
+
+System_Ext(git, "Repositório Git", "Fonte de verdade")
+System_Ext(internet, "Serviços externos", "CDNs, mídia, mapas e contato")
+
+Rel(browser, netlifyStatic, "Obtém o site em produção", "HTTPS")
+Rel(browser, nginx, "Obtém o site em implantação Docker", "HTTP/HTTPS via proxy")
+Rel(browser, identity, "Autentica editor", "HTTPS")
+Rel(browser, internet, "Carrega recursos", "HTTPS")
+Rel(identity, git, "Grava conteúdo", "Git/HTTPS")
+Rel(git, netlifyStatic, "Dispara publicação", "Deploy")
+Rel(git, nginx, "Gera snapshot durante docker build", "Build manual/CI")
+
+SHOW_LEGEND()
+@enduml
