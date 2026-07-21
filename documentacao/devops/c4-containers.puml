@@ -1,0 +1,28 @@
+@startuml C4_Containers_IBVB
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Contêineres — Site IBVB
+
+Person(visitante, "Visitante")
+Person(editor, "Editor")
+
+System_Boundary(ibvb, "Site IBVB") {
+  Container(web, "Site público", "HTML, JavaScript, Tailwind CSS", "Home e agenda renderizadas no navegador")
+  Container(admin, "Painel editorial", "Decap CMS", "Interface para edição do conteúdo")
+  ContainerDb(content, "Conteúdo", "JSON no repositório Git", "Geral, cultos, mensagens e eventos")
+}
+
+System_Ext(identity, "Netlify Identity / Git Gateway", "Autenticação e persistência Git")
+System_Ext(externals, "Serviços externos", "CDNs, YouTube, Maps, WhatsApp e Instagram")
+
+Rel(visitante, web, "Acessa", "HTTPS")
+Rel(editor, admin, "Acessa /admin", "HTTPS")
+Rel(web, content, "Obtém conteudo.json", "HTTP GET")
+Rel(admin, identity, "Autentica e publica", "HTTPS")
+Rel(identity, content, "Versiona alterações", "Git")
+Rel(web, externals, "Carrega recursos e abre links", "HTTPS")
+Rel(admin, externals, "Carrega CMS e fontes", "HTTPS")
+
+SHOW_LEGEND()
+@enduml
+
