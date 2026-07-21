@@ -65,6 +65,13 @@
       "hora": "9h",
       "titulo": "Café dos Gaditas",
       "desc": "Um encontro de comunhão, crescimento espiritual e fortalecimento na fé.\nParticipe e viva momentos de unidade, amizade e propósito."
+    },
+    {
+      "titulo": "Congresso de Jovens e Adolescentes",
+      "dia": "15 e 16",
+      "mes": "Ago",
+      "hora": "19h",
+      "desc": "Dias de adoração, comunhão e transformação, fortalecendo uma geração apaixonada por Cristo e comprometida em viver o propósito de Deus."
     }
   ]
 }
