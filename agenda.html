@@ -6,6 +6,32 @@
   <title>Agenda — Igreja Batista Vale das Bênçãos</title>
   <meta name="description" content="Agenda de cultos, eventos e programações da Igreja Batista Vale das Bênçãos — Santa Cruz, Volta Redonda/RJ." />
   <link rel="icon" type="image/png" href="logo-color.png" />
+
+  <link rel="canonical" href="https://ibvbsantacruz.com.br/agenda.html" />
+
+  <!-- Compartilhamento em WhatsApp, Facebook e Instagram -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Igreja Batista Vale das Bênçãos" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta property="og:title" content="Agenda da Igreja Batista Vale das Bênçãos" />
+  <meta property="og:description" content="Cultos, congressos, encontros e celebrações da IBVB em Santa Cruz, Volta Redonda/RJ. Confira as próximas datas e participe." />
+  <meta property="og:url" content="https://ibvbsantacruz.com.br/agenda.html" />
+  <meta property="og:image" content="https://ibvbsantacruz.com.br/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Igreja Batista Vale das Bênçãos — Ser Família, Ser Igreja, Ser Feliz" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Agenda da Igreja Batista Vale das Bênçãos" />
+  <meta name="twitter:description" content="Cultos, congressos, encontros e celebrações da IBVB em Santa Cruz, Volta Redonda/RJ. Confira as próximas datas e participe." />
+  <meta name="twitter:image" content="https://ibvbsantacruz.com.br/og-image.jpg" />
+
+  <meta name="theme-color" content="#578A28" />
+  <meta name="author" content="Igreja Batista Vale das Bênçãos" />
+  <meta name="geo.region" content="BR-RJ" />
+  <meta name="geo.placename" content="Volta Redonda" />
+
+  <link rel="preconnect" href="https://i.ytimg.com" crossorigin />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -37,7 +63,7 @@
   <header class="sticky top-0 z-50 bg-creme-100/90 backdrop-blur-md border-b border-creme-300">
     <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-8">
       <a href="index.html" class="flex items-center gap-3">
-        <img src="logo-color.png" alt="Logo Igreja Batista Vale das Bênçãos" class="h-12 w-12" />
+        <img src="logo-color.png" width="56" height="56" fetchpriority="high" alt="Logo Igreja Batista Vale das Bênçãos" class="h-12 w-12" />
         <span class="leading-tight">
           <span class="block font-display font-bold text-lg text-cafe-700">Vale das Bênçãos</span>
           <span class="block text-[11px] uppercase tracking-widest text-verde-600 font-semibold">Igreja Batista</span>
@@ -93,7 +119,7 @@
 
   <!-- Footer compacto -->
   <footer class="bg-cafe-900 py-10 text-center text-creme-200">
-    <img src="logo-white.png" alt="" class="mx-auto h-16 w-16" />
+    <img src="logo-white.png" alt="" class="mx-auto h-16 w-16"  loading="lazy" decoding="async" width="128" height="128" />
     <p class="mt-3 font-display font-bold text-creme-50">Ser Família, Ser Igreja, Ser Feliz.</p>
     <p class="mt-2 text-sm text-creme-200/70">Rua Agmar Lopes Corrêa, 303 — Santa Cruz, Volta Redonda/RJ</p>
     <p class="mt-4 text-xs text-creme-200/50">© 2026 Igreja Batista Vale das Bênçãos</p>
@@ -109,6 +135,52 @@
       if (d.length <= 11) d = '55' + d;             // sem codigo do pais
       var msg = 'Ol\u00e1! Quero saber mais sobre: ' + (evento || 'o evento');
       return 'https://wa.me/' + d + '?text=' + encodeURIComponent(msg);
+    }
+
+
+    // ---- Dados estruturados dos eventos (Google entende data, local e horario) ----
+    function publicarSchemaEventos(eventos) {
+      const MES = { Jan:'01', Fev:'02', Mar:'03', Abr:'04', Mai:'05', Jun:'06',
+                    Jul:'07', Ago:'08', Set:'09', Out:'10', Nov:'11', Dez:'12' };
+      const anoAtual = new Date().getFullYear();
+      const local = {
+        "@type": "Place",
+        "name": "Igreja Batista Vale das Bênçãos",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Rua Agmar Lopes Corrêa, 303",
+          "addressLocality": "Volta Redonda",
+          "addressRegion": "RJ",
+          "postalCode": "27288-050",
+          "addressCountry": "BR"
+        }
+      };
+      const itens = (eventos || []).map(ev => {
+        const diaNum = String(ev.dia || '').match(/\d+/);
+        const mes = MES[ev.mes];
+        if (!diaNum || !mes) return null;
+        const hora = String(ev.hora || '').replace('h', ':').replace(/[^0-9:]/g, '') || '19:00';
+        const hhmm = (hora.includes(':') ? hora : hora + ':00').split(':');
+        const inicio = `${anoAtual}-${mes}-${diaNum[0].padStart(2,'0')}T` +
+                       `${String(hhmm[0]).padStart(2,'0')}:${(hhmm[1]||'00').padStart(2,'0')}:00-03:00`;
+        return {
+          "@context": "https://schema.org",
+          "@type": "Event",
+          "name": ev.titulo,
+          "description": ev.desc,
+          "startDate": inicio,
+          "eventStatus": "https://schema.org/EventScheduled",
+          "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+          "location": local,
+          "organizer": { "@type": "Organization", "name": "Igreja Batista Vale das Bênçãos" },
+          "isAccessibleForFree": true
+        };
+      }).filter(Boolean);
+      if (!itens.length) return;
+      const s = document.createElement('script');
+      s.type = 'application/ld+json';
+      s.textContent = JSON.stringify(itens);
+      document.head.appendChild(s);
     }
 
     // Conteúdo editado no painel /admin
@@ -151,6 +223,7 @@
           card.classList.add('revealed');
           grid.appendChild(card);
         });
+        publicarSchemaEventos(c.eventos);
       } catch (e) { console.warn('conteudo.json indisponível — usando conteúdo padrão.', e); }
     })();
 

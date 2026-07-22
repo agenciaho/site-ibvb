@@ -53,12 +53,12 @@
   ],
   "eventos": [
     {
-      "titulo": "Congresso de Jovens e Adolescentes",
       "dia": "15 e 16",
-      "mes": "Ago",
+      "mes": "Set",
       "hora": "19h",
-      "desc": "Dias de adoração, comunhão e transformação, fortalecendo uma geração apaixonada por Cristo e comprometida em viver o propósito de Deus.",
-      "telefone": "24 99239-3636"
+      "titulo": "Congresso da Rede de Mulheres",
+      "desc": "Um chamado de Deus para mulheres viverem seu propósito, saindo do anonimato para o centro da Sua vontade.",
+      "telefone": ""
     },
     {
       "dia": "23",
@@ -66,7 +66,15 @@
       "hora": "9h",
       "titulo": "Café dos Gaditas",
       "desc": "Um encontro de comunhão, crescimento espiritual e fortalecimento na fé.\nParticipe e viva momentos de unidade, amizade e propósito.",
-      "telefone": "24 99917-6341"
+      "telefone": ""
+    },
+    {
+      "titulo": "Congresso de Jovens e Adolescentes",
+      "dia": "15 e 16",
+      "mes": "Ago",
+      "hora": "19h",
+      "desc": "Dias de adoração, comunhão e transformação, fortalecendo uma geração apaixonada por Cristo e comprometida em viver o propósito de Deus.",
+      "telefone": ""
     },
     {
       "dia": "12",
@@ -74,15 +82,7 @@
       "hora": "19:30",
       "titulo": "Bate-Papo Casais conectados",
       "desc": "Um encontro para fortalecer relacionamentos, compartilhar experiências e crescer juntos à luz da Palavra de Deus, construindo lares mais saudáveis e felizes.",
-      "telefone": "24 99901-5242"
-    },
-    {
-      "dia": "15 e 16",
-      "mes": "Set",
-      "hora": "19h",
-      "titulo": "Congresso da Rede de Mulheres",
-      "desc": "Um chamado de Deus para mulheres viverem seu propósito, saindo do anonimato para o centro da Sua vontade.",
-      "telefone": "24 97403-5075"
+      "telefone": ""
     }
   ]
 }

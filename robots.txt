@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Painel administrativo — nao indexar
+Disallow: /admin
+Disallow: /painel.html
+
+Sitemap: https://ibvbsantacruz.com.br/sitemap.xml
