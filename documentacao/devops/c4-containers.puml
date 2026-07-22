@@ -7,24 +7,19 @@ Person(visitante, "Visitante")
 Person(editor, "Editor")
 
 System_Boundary(ibvb, "Site IBVB") {
-  Container(web, "Site público", "HTML, JavaScript, Tailwind CSS", "Home e agenda renderizadas no navegador")
-  Container(admin, "Painel editorial", "Decap CMS", "Interface para edição do conteúdo")
-  ContainerDb(content, "Conteúdo", "JSON no repositório Git", "Geral, cultos, mensagens e eventos")
+  Container(web, "Site e painel", "Nginx + HTML/JavaScript", "Entrega páginas públicas e a interface /admin")
+  Container(api, "API administrativa", "Node.js", "Autenticação, validação, backups e auditoria")
+  ContainerDb(content, "Conteúdo persistente", "Volume Docker / JSON", "Conteúdo atual, 30 backups e log de auditoria")
 }
 
-System_Ext(identity, "Netlify Identity / Git Gateway", "Autenticação e persistência Git")
 System_Ext(externals, "Serviços externos", "CDNs, YouTube, Maps, WhatsApp e Instagram")
 
 Rel(visitante, web, "Acessa", "HTTPS")
-Rel(editor, admin, "Acessa /admin", "HTTPS")
-Rel(web, content, "Obtém conteudo.json", "HTTP GET")
-Rel(admin, identity, "Autentica e publica", "HTTPS")
-Rel(identity, content, "Versiona alterações", "Git")
+Rel(editor, web, "Usa /admin", "HTTPS")
+Rel(web, api, "Encaminha /api/admin", "HTTP interno")
+Rel(api, content, "Lê, valida e grava", "Filesystem")
+Rel(web, content, "Serve conteudo.json", "Filesystem somente leitura")
 Rel(web, externals, "Carrega recursos e abre links", "HTTPS")
-Rel(admin, externals, "Carrega CMS e fontes", "HTTPS")
-
-footer Elabora por Ricardo Augusto <ricardoaugusto.sek@gmail.com> em 21/07/2026.s
 
 SHOW_LEGEND()
 @enduml
-

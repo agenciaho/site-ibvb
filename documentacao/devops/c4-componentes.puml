@@ -1,39 +1,36 @@
 @startuml C4_Componentes_IBVB
 !includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
-title Componentes — Frontend do Site IBVB
+title Componentes — Site e administração IBVB
 
 Person(visitante, "Visitante")
 Person(editor, "Editor")
 
-Container_Boundary(frontend, "Artefatos estáticos") {
-  Component(home, "Página inicial", "index.html", "Navegação, apresentação, mensagens, cultos e destaques")
-  Component(agenda, "Página de agenda", "agenda.html", "Cultos recorrentes e todos os eventos")
-  Component(loader, "Carregador de conteúdo", "JavaScript no navegador", "Busca JSON, clona templates e preenche o DOM")
-  Component(helpers, "Helpers de integração", "JavaScript no navegador", "Miniatura de YouTube e links de WhatsApp")
-  Component(panel, "Painel editorial", "painel.html + Decap CMS", "Schema dos campos e fluxo de autenticação")
-  ComponentDb(json, "Conteúdo editorial", "conteudo.json", "Fonte de dados pública e versionada")
-  Component(assets, "Identidade visual", "PNG", "Logotipos colorido e branco")
+Container_Boundary(frontend, "Frontend estático") {
+  Component(home, "Página inicial", "index.html", "Apresentação, mensagens, cultos e destaques")
+  Component(agenda, "Agenda", "agenda.html", "Cultos recorrentes e todos os eventos")
+  Component(panel, "Painel", "painel.html", "Login e formulários administrativos")
+  Component(loader, "Carregador público", "JavaScript", "Busca o JSON e preenche o DOM")
 }
 
-System_Ext(identity, "Netlify Identity / Git Gateway")
-System_Ext(external, "CDNs e serviços externos")
+Container_Boundary(backend, "API administrativa") {
+  Component(auth, "Autenticação", "scrypt + sessões", "Login, expiração, rate limit e cookies")
+  Component(validation, "Validação e CSRF", "Node.js", "Protege e normaliza atualizações")
+  Component(storage, "Persistência", "Node.js filesystem", "Gravação atômica, backups e auditoria")
+}
+
+ComponentDb(json, "Conteúdo", "Volume Docker", "conteudo.json")
 
 Rel(visitante, home, "Navega")
 Rel(visitante, agenda, "Consulta")
-Rel(editor, panel, "Edita")
+Rel(editor, panel, "Gerencia")
 Rel(home, loader, "Inicializa")
 Rel(agenda, loader, "Inicializa")
-Rel(loader, json, "Lê", "fetch/JSON")
-Rel(loader, helpers, "Formata URLs")
-Rel(home, assets, "Exibe")
-Rel(agenda, assets, "Exibe")
-Rel(panel, identity, "Autentica/publica", "HTTPS")
-Rel(panel, external, "Carrega Decap CMS", "HTTPS")
-Rel(home, external, "Carrega mídia/estilos", "HTTPS")
-
-footer Elabora por Ricardo Augusto <ricardoaugusto.sek@gmail.com> em 21/07/2026.
+Rel(loader, json, "Lê")
+Rel(panel, auth, "Autentica", "JSON/HTTPS")
+Rel(panel, validation, "Consulta e salva", "JSON/HTTPS + CSRF")
+Rel(validation, storage, "Entrega conteúdo validado")
+Rel(storage, json, "Lê e grava")
 
 SHOW_LEGEND()
 @enduml
-

@@ -151,18 +151,6 @@
 </head>
 
 <body class="bg-creme-100 font-sans text-cafe-700 antialiased">
-  <script>
-    // Convite / recuperacao de senha do painel: o link do e-mail cai aqui,
-    // entao encaminhamos para o painel levando o token junto.
-    (function () {
-      var t = window.location.hash || '';
-      if (t.indexOf('invite_token') > -1 || t.indexOf('recovery_token') > -1 || t.indexOf('confirmation_token') > -1) {
-        window.location.replace('/painel.html' + t);
-      }
-    })();
-  </script>
-
-
   <!-- ============================================================
        HEADER / NAVEGAÇÃO  (sticky, mobile-first)
   ============================================================ -->

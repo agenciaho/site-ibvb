@@ -1,35 +1,33 @@
 @startuml C4_Deployment_IBVB
 !includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Deployment.puml
 
-title Implantação — Site IBVB
+title Implantação — Site IBVB na VPS
 
-Deployment_Node(client, "Dispositivo do usuário", "Navegador moderno") {
-  Container(browser, "Frontend IBVB", "HTML/CSS/JavaScript", "Executa a apresentação e integrações")
+Deployment_Node(client, "Dispositivo do usuário", "Navegador") {
+  Container(browser, "Frontend IBVB", "HTML/CSS/JavaScript", "Site público ou painel")
 }
 
-Deployment_Node(netlify, "Produção gerenciada", "Netlify") {
-  Container(netlifyStatic, "Publicação estática", "Netlify CDN", "HTML, JSON e imagens da branch main")
-  Container(identity, "Identity / Git Gateway", "Serviço Netlify", "Login e publicação editorial")
-}
-
-Deployment_Node(dockerHost, "Host alternativo", "Docker Engine + Compose") {
-  Deployment_Node(container, "site-ibvb", "nginx:alpine") {
-    Container(nginx, "Servidor estático", "Nginx", "HTML, JSON, imagens, redirects e cache")
+Deployment_Node(vps, "VPS", "Ubuntu + Docker Compose") {
+  Container(proxy, "Proxy TLS", "Nginx + Certbot", "HTTPS e proxy para 127.0.0.1:2027")
+  Deployment_Node(siteContainer, "Contêiner site", "nginx:alpine") {
+    Container(nginx, "Site estático", "Nginx", "Páginas, JSON e proxy interno da API")
   }
+  Deployment_Node(adminContainer, "Contêiner admin", "node:alpine") {
+    Container(api, "API administrativa", "Node.js", "Login e persistência")
+  }
+  ContainerDb(volume, "content_data", "Volume Docker", "JSON, backups e auditoria")
 }
 
-System_Ext(git, "Repositório Git", "Fonte de verdade")
+System_Ext(git, "GitHub Actions", "Pipeline de deploy")
 System_Ext(internet, "Serviços externos", "CDNs, mídia, mapas e contato")
 
-Rel(browser, netlifyStatic, "Obtém o site em produção", "HTTPS")
-Rel(browser, nginx, "Obtém o site em implantação Docker", "HTTP/HTTPS via proxy")
-Rel(browser, identity, "Autentica editor", "HTTPS")
+Rel(browser, proxy, "Acessa", "HTTPS")
+Rel(proxy, nginx, "Encaminha", "HTTP 127.0.0.1:2027")
+Rel(nginx, api, "Encaminha /api/admin", "Rede Docker")
+Rel(nginx, volume, "Lê conteúdo", "Somente leitura")
+Rel(api, volume, "Grava conteúdo e backups")
 Rel(browser, internet, "Carrega recursos", "HTTPS")
-Rel(identity, git, "Grava conteúdo", "Git/HTTPS")
-Rel(git, netlifyStatic, "Dispara publicação", "Deploy")
-Rel(git, nginx, "Gera snapshot durante docker build", "Build manual/CI")
-
-footer Elabora por Ricardo Augusto <ricardoaugusto.sek@gmail.com> em 21/07/2026.
+Rel(git, vps, "Atualiza e recria contêineres", "SSH")
 
 SHOW_LEGEND()
 @enduml

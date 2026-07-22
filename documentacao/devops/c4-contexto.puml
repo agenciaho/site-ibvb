@@ -4,23 +4,17 @@
 title Contexto — Site IBVB
 
 Person(visitante, "Visitante", "Consulta informações, mensagens, cultos e eventos")
-Person(editor, "Editor de conteúdo", "Mantém cultos, vídeos e agenda")
+Person(editor, "Editor", "Mantém o conteúdo por uma área restrita")
 
-System(site, "Site IBVB", "Site institucional público e painel editorial")
+System(site, "Site IBVB", "Site institucional e painel administrativo")
 
-System_Ext(netlifyIdentity, "Netlify Identity e Git Gateway", "Autenticação e acesso ao repositório Git")
-System_Ext(git, "Repositório Git", "Código, conteúdo e histórico de alterações")
-System_Ext(midia, "Serviços de mídia e contato", "YouTube, Google Maps, Instagram e WhatsApp")
-System_Ext(cdn, "CDNs", "Tailwind CSS, Google Fonts e Decap CMS")
+System_Ext(git, "GitHub", "Código-fonte e pipeline de implantação")
+System_Ext(midia, "Serviços externos", "YouTube, Google Maps, Instagram, WhatsApp, fontes e CDN")
 
 Rel(visitante, site, "Navega", "HTTPS")
-Rel(editor, site, "Edita conteúdo em /admin", "HTTPS")
-Rel(site, netlifyIdentity, "Autentica editores e publica via gateway", "HTTPS")
-Rel(netlifyIdentity, git, "Lê e grava conteudo.json", "Git/HTTPS")
-Rel(site, midia, "Incorpora e direciona para conteúdo", "HTTPS")
-Rel(site, cdn, "Carrega estilos, fontes e scripts", "HTTPS")
+Rel(editor, site, "Autentica e edita em /admin", "HTTPS")
+Rel(git, site, "Implanta novas versões", "GitHub Actions / SSH")
+Rel(site, midia, "Carrega mídia e abre contatos", "HTTPS")
 
-footer Elabora por Ricardo Augusto <ricardoaugusto.sek@gmail.com> em 21/07/2026.
 SHOW_LEGEND()
 @enduml
-

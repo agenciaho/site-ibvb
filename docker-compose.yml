@@ -1,4 +1,31 @@
 services:
+  admin:
+    build:
+      context: .
+      dockerfile: admin/Dockerfile
+    image: "${ADMIN_IMAGE:-site-ibvb-admin:local}"
+    container_name: "${ADMIN_CONTAINER_NAME:-site-ibvb-admin}"
+    restart: "${RESTART_POLICY:-unless-stopped}"
+    environment:
+      ADMIN_USERNAME: "${ADMIN_USERNAME:-admin}"
+      ADMIN_PASSWORD_HASH: "${ADMIN_PASSWORD_HASH:-}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
+    volumes:
+      - content_data:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:3000/health"]
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
+
   site:
     build:
       context: .
@@ -8,4 +35,11 @@ services:
     restart: "${RESTART_POLICY:-unless-stopped}"
     ports:
       - "${SITE_HOST:-127.0.0.1}:${SITE_PORT:-8080}:80"
+    volumes:
+      - content_data:/data:ro
+    depends_on:
+      admin:
+        condition: service_healthy
 
+volumes:
+  content_data:

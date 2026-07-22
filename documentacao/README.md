@@ -27,7 +27,8 @@ Sugestão de extensão:
 
 - **Site estático:** reduz operação e elimina servidor de aplicação e banco de dados.
 - **JSON como conteúdo:** `conteudo.json` separa as alterações editoriais da estrutura das páginas.
-- **CMS baseado em Git:** o Decap CMS persiste publicações como commits, mantendo histórico e revisão no repositório.
+- **Painel próprio:** uma API interna autentica editores e persiste o conteúdo sem depender da Netlify.
+- **Volume persistente:** conteúdo, backups e auditoria sobrevivem à substituição dos contêineres.
 - **Dependências por CDN:** simplifica o projeto, mas requer internet no navegador e torna disponibilidade, versão e privacidade dependentes de terceiros.
 - **Fallback no HTML:** páginas continuam exibindo conteúdo básico se o JSON estiver indisponível.
 - **Nginx no Docker:** entrega os mesmos artefatos estáticos e replica as rotas e headers relevantes da Netlify.
@@ -44,20 +45,17 @@ Sugestão de extensão:
 
 ### Publicação editorial
 
-1. O editor abre `/admin`.
-2. Netlify Identity autentica o usuário.
-3. Decap CMS lê e altera `conteudo.json` via Git Gateway.
-4. A alteração entra na branch `main`.
-5. O deploy da Netlify publica a nova versão.
-
-O contêiner Docker serve um snapshot produzido no momento do `docker build`. Para incorporar commits de conteúdo posteriores, reconstrua e recrie o serviço.
+1. O editor abre `/admin` e informa suas credenciais.
+2. A API valida o hash da senha e cria uma sessão protegida por cookie e CSRF.
+3. O painel lê e edita o JSON pela API interna.
+4. A API valida, cria backup e grava `conteudo.json` de forma atômica.
+5. O Nginx serve imediatamente o conteúdo do volume compartilhado.
 
 ## Operação e segurança
 
-- O contêiner não armazena estado e pode ser substituído livremente.
+- Os contêineres podem ser substituídos; o volume `content_data` deve ser preservado.
 - TLS, rate limiting e logs centralizados devem ser configurados no proxy ou plataforma que estiver à frente do Nginx.
-- O painel possui `noindex`; o controle de acesso efetivo pertence ao Netlify Identity/Git Gateway.
+- O painel possui `noindex`, sessão segura, CSRF, limitação de login e senha com hash scrypt.
 - Telefones e demais dados em `conteudo.json` são públicos porque chegam ao navegador.
 - Atualize conscientemente versões e URLs de CDN definidas nos arquivos HTML.
-- Faça backup pelo próprio repositório Git; ele é a fonte de verdade do conteúdo.
-
+- A API mantém 30 backups no volume; exporte-os também para armazenamento externo.

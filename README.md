@@ -1,6 +1,6 @@
 # Site IBVB
 
-Site institucional da **Igreja Batista Vale das Bênçãos (IBVB)**, em Santa Cruz, Volta Redonda/RJ. O projeto é uma aplicação web estática, responsiva e administrável pelo Decap CMS.
+Site institucional da **Igreja Batista Vale das Bênçãos (IBVB)**, em Santa Cruz, Volta Redonda/RJ. O frontend público é estático e responsivo; uma API privada oferece administração de conteúdo com persistência e backups.
 
 ## Visão geral
 
@@ -8,7 +8,7 @@ Site institucional da **Igreja Batista Vale das Bênçãos (IBVB)**, em Santa Cr
 | --- | --- | --- |
 | `/` | `index.html` | Página institucional, cultos, mensagens, ministérios e eventos |
 | `/agenda.html` | `agenda.html` | Agenda completa de cultos e eventos |
-| `/admin` | `painel.html` | Painel editorial Decap CMS |
+| `/admin` | `painel.html` | Painel administrativo protegido por login |
 | `/conteudo.json` | `conteudo.json` | Fonte de dados editável do site |
 
 Não há etapa de build: HTML, CSS e JavaScript são entregues diretamente pelo servidor. O Tailwind CSS, as fontes e as integrações são carregados por CDN.
@@ -54,7 +54,7 @@ Como o site faz `fetch` de `conteudo.json`, ele deve ser servido por HTTP — ab
 python3 -m http.server 8080
 ```
 
-Depois, acesse `http://localhost:8080`. O painel editorial depende dos serviços da Netlify e não é integralmente reproduzido apenas pelo servidor local.
+Depois, acesse `http://localhost:8080`. Para usar o painel, configure `ADMIN_PASSWORD` ou `ADMIN_PASSWORD_HASH` conforme [documentacao/admin.md](documentacao/admin.md).
 
 ## Edição de conteúdo
 
@@ -69,13 +69,13 @@ A página inicial mostra somente os três primeiros eventos; a agenda mostra tod
 
 ### Fluxo editorial
 
-1. O editor acessa `/admin` e autentica pelo Netlify Identity.
-2. O Decap CMS usa o backend `git-gateway` e a branch `main`.
-3. Ao publicar, o CMS cria um commit alterando `conteudo.json`.
-4. O provedor de hospedagem publica o novo commit.
-5. Os navegadores carregam a versão atualizada do JSON (cache de até 60 segundos).
+1. O editor acessa `/admin` e autentica com o usuário e senha configurados na VPS.
+2. A API cria uma sessão segura e entrega o conteúdo atual.
+3. Ao salvar, a API valida os campos, cria um backup e atualiza o volume persistente.
+4. O Nginx passa a servir imediatamente o novo `conteudo.json`.
+5. Os navegadores carregam a versão atualizada (cache de até 60 segundos).
 
-Para o painel funcionar em produção, o site da Netlify deve ter **Identity** e **Git Gateway** habilitados, com usuários convidados. Em Docker, as páginas públicas funcionam normalmente, mas a publicação pelo painel continua ligada à configuração do domínio na Netlify.
+Configuração, segurança, troca de senha e recuperação estão documentadas no [manual do painel](documentacao/admin.md).
 
 ## Estrutura do repositório
 
@@ -83,8 +83,9 @@ Para o painel funcionar em produção, o site da Netlify deve ter **Identity** e
 .
 ├── index.html                 # página principal e lógica de apresentação
 ├── agenda.html                # agenda completa
-├── painel.html                # configuração e interface do Decap CMS
-├── conteudo.json              # conteúdo administrável
+├── painel.html                # interface administrativa
+├── admin/                     # API, hash de senha e imagem do painel
+├── conteudo.json              # conteúdo inicial do volume persistente
 ├── logo-color.png             # marca para fundos claros
 ├── logo-white.png             # marca para fundos escuros
 ├── netlify.toml               # redirects e cache na Netlify
@@ -103,22 +104,20 @@ Para o painel funcionar em produção, o site da Netlify deve ter **Identity** e
 | YouTube | Lives, vídeos e miniaturas | Mídia externa não carrega |
 | Google Maps | Mapa e rota da igreja | Mapa incorporado não carrega |
 | WhatsApp | Contato de eventos e ministérios | Links externos ficam indisponíveis |
-| Netlify Identity | Autenticação dos editores | Login do painel não funciona |
-| Decap CMS CDN | Interface de administração | Painel editorial não inicia |
 
 ## Deploy
 
 ### Netlify
 
-Conecte o repositório e publique a raiz, sem comando de build. O `netlify.toml` já configura `/admin` e cache de 60 segundos para `conteudo.json`. Habilite Identity e Git Gateway para edição.
+Conecte o repositório e publique a raiz, sem comando de build. O `netlify.toml` configura `/admin` e cache de 60 segundos para `conteudo.json`. O painel administrativo próprio requer a implantação Docker, pois sua API e persistência não existem em hospedagem puramente estática.
 
 ### Docker
 
-A imagem usa Nginx Alpine, expõe a porta `80` internamente e inclui healthcheck. O `nginx.conf` reproduz os redirects de `/admin` e o cache de `conteudo.json`. Em produção, coloque o contêiner atrás de um proxy reverso com TLS e defina `SITE_HOST=127.0.0.1` quando somente o proxy local precisar acessá-lo.
+O Compose executa o Nginx do site e a API administrativa em uma rede privada, com conteúdo em volume persistente. Em produção, coloque o site atrás de um proxy reverso com TLS e defina `SITE_HOST=127.0.0.1` quando somente o proxy local precisar acessá-lo.
 
 ## Arquitetura
 
-A descrição técnica e os diagramas C4 em PlantUML estão em [documentacao/devops](documentacao/devops/README.md):
+A descrição técnica e os diagramas C4 em PlantUML estão em [documentacao](documentacao/README.md):
 
 - [Contexto do sistema](documentacao/devops/c4-contexto.puml)
 - [Contêineres](documentacao/devops/c4-containers.puml)
@@ -137,4 +136,3 @@ curl --fail http://localhost:8080/admin
 ```
 
 Confira também a navegação em telas móveis, os links externos, o JSON no painel e o estado saudável do contêiner em `docker compose ps`.
-
