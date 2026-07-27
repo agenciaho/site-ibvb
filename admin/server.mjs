@@ -6,16 +6,28 @@ import { basename, join } from 'node:path';
 const PORT = Number(process.env.PORT || 3000);
 const DATA_DIR = process.env.DATA_DIR || '/data';
 const CONTENT_FILE = join(DATA_DIR, 'conteudo.json');
+const FOTOS_DIR = join(DATA_DIR, 'fotos');
 const DEFAULT_CONTENT = process.env.DEFAULT_CONTENT || '/app/default-content.json';
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '';
 const PLAIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
 const SESSION_TTL = 8 * 60 * 60 * 1000;
 const MAX_BODY = 256 * 1024;
+const MAX_PHOTO_BODY = 4.5 * 1024 * 1024; // ~3MB de imagem em base64 + folga do JSON
+const MAX_PHOTO_BYTES = 3 * 1024 * 1024;
 const MAX_ATTEMPTS = 5;
 const ATTEMPT_WINDOW = 15 * 60 * 1000;
 const sessions = new Map();
 const attempts = new Map();
+
+// Assinaturas binárias (magic numbers) usadas para confirmar que o conteúdo
+// enviado é realmente do tipo de imagem declarado, e não apenas um arquivo
+// renomeado — o navegador pode mentir sobre o mimeType, os bytes não.
+const PHOTO_TYPES = {
+  'image/jpeg': { ext: 'jpg', check: (b) => b.length > 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff },
+  'image/png': { ext: 'png', check: (b) => b.length > 8 && b.toString('hex', 0, 8) === '89504e470d0a1a0a' },
+  'image/webp': { ext: 'webp', check: (b) => b.length > 12 && b.toString('ascii', 0, 4) === 'RIFF' && b.toString('ascii', 8, 12) === 'WEBP' },
+};
 
 const jsonHeaders = {
   'Content-Type': 'application/json; charset=utf-8',
@@ -70,12 +82,12 @@ function requireSession(req, res, csrf = false) {
   return session;
 }
 
-async function readBody(req) {
+async function readBody(req, maxSize = MAX_BODY) {
   let size = 0;
   const chunks = [];
   for await (const chunk of req) {
     size += chunk.length;
-    if (size > MAX_BODY) throw new Error('PAYLOAD_TOO_LARGE');
+    if (size > maxSize) throw new Error('PAYLOAD_TOO_LARGE');
     chunks.push(chunk);
   }
   try {
@@ -117,6 +129,13 @@ function string(value, label, max = 500, required = true) {
   return result;
 }
 
+function fotoPath(value, label) {
+  const result = string(value || '', label, 200, false);
+  if (!result) return '';
+  if (!/^\/fotos\/[a-f0-9]{32}\.(jpg|png|webp)$/.test(result)) throw new Error(`${label} é inválida.`);
+  return result;
+}
+
 function httpsUrl(value, label, required = true) {
   const result = string(value, label, 1000, required);
   if (!result) return '';
@@ -128,6 +147,8 @@ function httpsUrl(value, label, required = true) {
   }
   return result;
 }
+
+const MINISTERIOS_SLUGS = ['homens', 'jovens', 'adolescentes', 'mulheres', 'casais', 'kids'];
 
 function validateContent(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) throw new Error('Conteúdo inválido.');
@@ -169,16 +190,53 @@ function validateContent(input) {
         telefone,
       };
     }),
+    ministerios: MINISTERIOS_SLUGS.reduce((acc, slug) => {
+      const item = (input.ministerios || {})[slug] || {};
+      acc[slug] = {
+        liderNome: string(item.liderNome || '', `Nome da liderança (${slug})`, 120, false),
+        liderBio: string(item.liderBio || '', `Descrição da liderança (${slug})`, 600, false),
+        foto: fotoPath(item.foto, `Foto da liderança (${slug})`),
+      };
+      return acc;
+    }, {}),
+    pastores: array(input.pastores, 'Pastores', 12).map((item, index) => ({
+      nome: string(item?.nome, `Nome do pastor ${index + 1}`, 120),
+      cargo: string(item?.cargo || '', `Cargo do pastor ${index + 1}`, 120, false),
+      bio: string(item?.bio || '', `Biografia do pastor ${index + 1}`, 600, false),
+      foto: fotoPath(item?.foto, `Foto do pastor ${index + 1}`),
+    })),
   };
 }
 
 async function initializeData() {
   await mkdir(join(DATA_DIR, 'backups'), { recursive: true });
+  await mkdir(FOTOS_DIR, { recursive: true });
   try {
     await readFile(CONTENT_FILE);
   } catch {
     await copyFile(DEFAULT_CONTENT, CONTENT_FILE);
   }
+}
+
+async function saveFoto(mimeType, dataBase64) {
+  const tipo = PHOTO_TYPES[mimeType];
+  if (!tipo) throw new Error('Formato de imagem não suportado. Envie JPG, PNG ou WEBP.');
+  if (typeof dataBase64 !== 'string' || !dataBase64) throw new Error('Nenhuma imagem recebida.');
+  let bytes;
+  try {
+    bytes = Buffer.from(dataBase64, 'base64');
+  } catch {
+    throw new Error('Imagem inválida.');
+  }
+  if (!bytes.length) throw new Error('Imagem inválida.');
+  if (bytes.length > MAX_PHOTO_BYTES) throw new Error('Imagem maior que 3MB. Envie um arquivo menor.');
+  if (!tipo.check(bytes)) throw new Error('O conteúdo do arquivo não corresponde ao tipo de imagem informado.');
+  const filename = `${randomBytes(16).toString('hex')}.${tipo.ext}`;
+  const destino = join(FOTOS_DIR, filename);
+  const temporary = join(FOTOS_DIR, `.tmp-${randomBytes(8).toString('hex')}`);
+  await writeFile(temporary, bytes, { mode: 0o644 });
+  await rename(temporary, destino);
+  return `/fotos/${filename}`;
 }
 
 async function saveContent(content, username, ip) {
@@ -264,6 +322,13 @@ const server = createServer(async (req, res) => {
       const content = validateContent(await readBody(req));
       await saveContent(content, session.username, ip);
       return send(res, 200, { ok: true, savedAt: new Date().toISOString() });
+    }
+    if (req.method === 'POST' && url.pathname === '/api/admin/foto') {
+      const session = requireSession(req, res, true);
+      if (!session) return;
+      const body = await readBody(req, MAX_PHOTO_BODY);
+      const url_ = await saveFoto(body.mimeType, body.dataBase64);
+      return send(res, 200, { ok: true, url: url_ });
     }
     return send(res, 404, { error: 'Rota não encontrada.' });
   } catch (error) {
