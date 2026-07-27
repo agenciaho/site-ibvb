@@ -121,18 +121,27 @@ function adminConfigured() {
   return PASSWORD_HASH.startsWith('scrypt$') || PLAIN_PASSWORD.length >= 12;
 }
 
+// Erros de validação (entrada do usuário) devem virar HTTP 400 com a mensagem
+// específica; qualquer outro erro inesperado vira 500 genérico. Antes essa
+// distinção era feita checando o texto do stack trace por "node:internal" —
+// mas toda função async no Node acaba tendo esse trecho na pilha (por causa
+// do agendamento de microtasks), então essa checagem nunca era verdadeira e
+// TODO erro de validação (até um simples "link inválido") caía no 500
+// genérico. Uma classe própria resolve isso de forma confiável.
+class ValidationError extends Error {}
+
 function string(value, label, max = 500, required = true) {
-  if (typeof value !== 'string') throw new Error(`${label} deve ser um texto.`);
+  if (typeof value !== 'string') throw new ValidationError(`${label} deve ser um texto.`);
   const result = value.trim();
-  if (required && !result) throw new Error(`${label} é obrigatório.`);
-  if (result.length > max) throw new Error(`${label} excede ${max} caracteres.`);
+  if (required && !result) throw new ValidationError(`${label} é obrigatório.`);
+  if (result.length > max) throw new ValidationError(`${label} excede ${max} caracteres.`);
   return result;
 }
 
 function fotoPath(value, label) {
   const result = string(value || '', label, 200, false);
   if (!result) return '';
-  if (!/^\/fotos\/[a-f0-9]{32}\.(jpg|png|webp)$/.test(result)) throw new Error(`${label} é inválida.`);
+  if (!/^\/fotos\/[a-f0-9]{32}\.(jpg|png|webp)$/.test(result)) throw new ValidationError(`${label} é inválida.`);
   return result;
 }
 
@@ -143,7 +152,7 @@ function httpsUrl(value, label, required = true) {
     const url = new URL(result);
     if (url.protocol !== 'https:') throw new Error();
   } catch {
-    throw new Error(`${label} deve ser uma URL HTTPS válida.`);
+    throw new ValidationError(`${label} deve ser uma URL HTTPS válida.`);
   }
   return result;
 }
@@ -151,11 +160,11 @@ function httpsUrl(value, label, required = true) {
 const MINISTERIOS_SLUGS = ['homens', 'jovens', 'adolescentes', 'mulheres', 'casais', 'kids'];
 
 function validateContent(input) {
-  if (!input || typeof input !== 'object' || Array.isArray(input)) throw new Error('Conteúdo inválido.');
+  if (!input || typeof input !== 'object' || Array.isArray(input)) throw new ValidationError('Conteúdo inválido.');
   const geral = input.geral || {};
   const array = (value, label, max) => {
-    if (!Array.isArray(value)) throw new Error(`${label} deve ser uma lista.`);
-    if (value.length > max) throw new Error(`${label} permite no máximo ${max} itens.`);
+    if (!Array.isArray(value)) throw new ValidationError(`${label} deve ser uma lista.`);
+    if (value.length > max) throw new ValidationError(`${label} permite no máximo ${max} itens.`);
     return value;
   };
 
@@ -180,7 +189,7 @@ function validateContent(input) {
     })),
     eventos: array(input.eventos, 'Eventos', 100).map((item, index) => {
       const telefone = string(item?.telefone || '', `Telefone do evento ${index + 1}`, 30, false);
-      if (telefone && !/^[+()\d\s-]+$/.test(telefone)) throw new Error(`Telefone do evento ${index + 1} é inválido.`);
+      if (telefone && !/^[+()\d\s-]+$/.test(telefone)) throw new ValidationError(`Telefone do evento ${index + 1} é inválido.`);
       return {
         dia: string(item?.dia, `Dia do evento ${index + 1}`, 30),
         mes: string(item?.mes, `Mês do evento ${index + 1}`, 10),
@@ -220,17 +229,17 @@ async function initializeData() {
 
 async function saveFoto(mimeType, dataBase64) {
   const tipo = PHOTO_TYPES[mimeType];
-  if (!tipo) throw new Error('Formato de imagem não suportado. Envie JPG, PNG ou WEBP.');
-  if (typeof dataBase64 !== 'string' || !dataBase64) throw new Error('Nenhuma imagem recebida.');
+  if (!tipo) throw new ValidationError('Formato de imagem não suportado. Envie JPG, PNG ou WEBP.');
+  if (typeof dataBase64 !== 'string' || !dataBase64) throw new ValidationError('Nenhuma imagem recebida.');
   let bytes;
   try {
     bytes = Buffer.from(dataBase64, 'base64');
   } catch {
-    throw new Error('Imagem inválida.');
+    throw new ValidationError('Imagem inválida.');
   }
-  if (!bytes.length) throw new Error('Imagem inválida.');
-  if (bytes.length > MAX_PHOTO_BYTES) throw new Error('Imagem maior que 3MB. Envie um arquivo menor.');
-  if (!tipo.check(bytes)) throw new Error('O conteúdo do arquivo não corresponde ao tipo de imagem informado.');
+  if (!bytes.length) throw new ValidationError('Imagem inválida.');
+  if (bytes.length > MAX_PHOTO_BYTES) throw new ValidationError('Imagem maior que 3MB. Envie um arquivo menor.');
+  if (!tipo.check(bytes)) throw new ValidationError('O conteúdo do arquivo não corresponde ao tipo de imagem informado.');
   const filename = `${randomBytes(16).toString('hex')}.${tipo.ext}`;
   const destino = join(FOTOS_DIR, filename);
   const temporary = join(FOTOS_DIR, `.tmp-${randomBytes(8).toString('hex')}`);
@@ -334,9 +343,7 @@ const server = createServer(async (req, res) => {
   } catch (error) {
     if (error.message === 'PAYLOAD_TOO_LARGE') return send(res, 413, { error: 'Conteúdo muito grande.' });
     if (error.message === 'INVALID_JSON') return send(res, 400, { error: 'JSON inválido.' });
-    if (error instanceof TypeError || !String(error.message).includes('ENOENT')) {
-      if (error.message && !error.stack?.includes('node:internal')) return send(res, 400, { error: error.message });
-    }
+    if (error instanceof ValidationError) return send(res, 400, { error: error.message });
     console.error(error);
     return send(res, 500, { error: 'Erro interno. Consulte os logs do serviço.' });
   }
