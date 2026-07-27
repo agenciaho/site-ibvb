@@ -54,6 +54,13 @@
     .savebar { position:fixed; z-index:9; left:0; right:0; bottom:0; display:flex; justify-content:center; align-items:center; gap:16px; padding:12px 20px; background:rgba(255,253,248,.96); border-top:1px solid var(--borda); backdrop-filter:blur(12px); }
     #saveStatus { min-width:150px; font-size:13px; color:#756655; }
     @media (max-width:700px) { .grid{grid-template-columns:1fr}.full{grid-column:auto}.topbar{padding:10px 14px}.brand span{display:none}.intro{display:block}.section{padding:18px}.top-actions .secondary{display:none} }
+    .foto-field { display:flex; align-items:center; gap:14px; margin-top:6px; }
+    .foto-preview { width:64px; height:64px; border-radius:50%; object-fit:cover; background:#f1ece0; border:1px solid var(--borda); flex-shrink:0; }
+    .foto-preview.empty { display:flex; align-items:center; justify-content:center; font-size:11px; color:#a89989; text-align:center; }
+    .foto-actions { display:flex; flex-direction:column; gap:6px; }
+    .foto-actions input[type=file] { padding:6px; font-size:12px; }
+    .foto-status { font-size:12px; color:#756655; }
+    .foto-remove { align-self:flex-start; border:0; background:none; color:var(--erro); font-size:12px; font-weight:700; padding:0; }
   </style>
 </head>
 <body>
@@ -111,6 +118,18 @@
           <div class="section-head"><h2>Agenda de eventos</h2><button class="add" type="button" data-add="eventos">+ Adicionar</button></div>
           <div id="eventosList"></div>
         </section>
+
+        <section class="section">
+          <div class="section-head"><h2>Liderança dos ministérios</h2></div>
+          <p class="muted">Nome, descrição e foto de quem lidera cada ministério da página inicial.</p>
+          <div id="ministeriosList"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-head"><h2>Nossos pastores</h2><button class="add" type="button" data-add="pastores">+ Adicionar</button></div>
+          <p class="muted">Exibidos na página "Conheça nossos pastores".</p>
+          <div id="pastoresList"></div>
+        </section>
       </form>
     </main>
     <div class="savebar"><span id="saveStatus">Nenhuma alteração pendente.</span><button id="saveButton" class="primary" type="button">Salvar alterações</button></div>
@@ -133,6 +152,12 @@
       ]
     };
     const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const ministerioLabels = {
+      homens: 'Rede de Homens', jovens: 'Vale Jovem', adolescentes: 'Vale Adolescente',
+      mulheres: 'Rede de Mulheres', casais: 'Rede de Casais', kids: 'Vale Kids'
+    };
+    const FOTO_MAX_BYTES = 3 * 1024 * 1024;
+    const FOTO_TIPOS = ['image/jpeg', 'image/png', 'image/webp'];
     let csrf = '';
     let content = null;
     let dirty = false;
@@ -199,6 +224,174 @@
       renumber(type);
     }
 
+    async function fileToBase64(file) {
+      const buffer = await file.arrayBuffer();
+      let binary = '';
+      const bytes = new Uint8Array(buffer);
+      const chunk = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunk) binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+      return btoa(binary);
+    }
+
+    // Campo de foto reutilizável: preview + input de arquivo + upload imediato para /api/admin/foto.
+    // O valor salvo no formulário é a URL retornada (ex.: /fotos/xxxx.jpg), guardada em wrap.dataset.url.
+    function makeFotoField(currentUrl = '') {
+      const wrap = document.createElement('div');
+      wrap.className = 'foto-field';
+      wrap.dataset.url = currentUrl || '';
+
+      const preview = document.createElement(currentUrl ? 'img' : 'div');
+      preview.className = 'foto-preview' + (currentUrl ? '' : ' empty');
+      if (currentUrl) preview.src = currentUrl; else preview.textContent = 'Sem foto';
+
+      const actions = document.createElement('div');
+      actions.className = 'foto-actions';
+      const input = document.createElement('input');
+      input.type = 'file'; input.accept = 'image/jpeg,image/png,image/webp';
+      const status = document.createElement('span');
+      status.className = 'foto-status';
+      status.textContent = currentUrl ? 'Foto atual salva.' : 'Nenhuma foto enviada ainda.';
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button'; removeBtn.className = 'foto-remove hidden'; removeBtn.textContent = 'Remover foto';
+
+      function swapPreview(url) {
+        const novo = document.createElement(url ? 'img' : 'div');
+        novo.className = 'foto-preview' + (url ? '' : ' empty');
+        if (url) novo.src = url; else novo.textContent = 'Sem foto';
+        wrap.replaceChild(novo, wrap.querySelector('.foto-preview'));
+      }
+
+      removeBtn.addEventListener('click', () => {
+        wrap.dataset.url = '';
+        swapPreview('');
+        status.textContent = 'Foto removida (salve para confirmar).';
+        removeBtn.classList.add('hidden');
+        input.value = '';
+        setDirty(true);
+      });
+
+      input.addEventListener('change', async () => {
+        const file = input.files[0];
+        if (!file) return;
+        if (!FOTO_TIPOS.includes(file.type)) { status.textContent = 'Formato não suportado. Use JPG, PNG ou WEBP.'; input.value=''; return; }
+        if (file.size > FOTO_MAX_BYTES) { status.textContent = 'Arquivo maior que 3MB.'; input.value=''; return; }
+        status.textContent = 'Enviando foto…'; input.disabled = true;
+        try {
+          const dataBase64 = await fileToBase64(file);
+          const result = await api('/api/admin/foto', { method:'POST', body: JSON.stringify({ mimeType: file.type, dataBase64 }) });
+          wrap.dataset.url = result.url;
+          swapPreview(result.url);
+          status.textContent = 'Foto enviada. Salve as alterações para confirmar.';
+          removeBtn.classList.remove('hidden');
+          setDirty(true);
+        } catch (error) {
+          status.textContent = error.message || 'Falha ao enviar a foto.';
+        } finally { input.disabled = false; }
+      });
+
+      if (currentUrl) removeBtn.classList.remove('hidden');
+      actions.append(input, status, removeBtn);
+      wrap.append(preview, actions);
+      return wrap;
+    }
+
+    function renderMinisterios() {
+      const list = document.getElementById('ministeriosList'); list.innerHTML = '';
+      Object.keys(ministerioLabels).forEach(slug => {
+        const dados = (content.ministerios || {})[slug] || {};
+        const card = document.createElement('div');
+        card.className = 'item-card'; card.dataset.slug = slug;
+        const title = document.createElement('h3'); title.className = 'item-title'; title.textContent = ministerioLabels[slug];
+        card.appendChild(title);
+        const grid = document.createElement('div'); grid.className = 'grid';
+
+        const wrapNome = document.createElement('div');
+        wrapNome.innerHTML = '<label>Nome da liderança</label>';
+        const nomeInput = document.createElement('input'); nomeInput.dataset.key = 'liderNome'; nomeInput.value = dados.liderNome || '';
+        nomeInput.addEventListener('input', () => setDirty(true));
+        wrapNome.appendChild(nomeInput); grid.appendChild(wrapNome);
+
+        const wrapBio = document.createElement('div'); wrapBio.className = 'full';
+        wrapBio.innerHTML = '<label>Descrição breve</label>';
+        const bioInput = document.createElement('textarea'); bioInput.dataset.key = 'liderBio'; bioInput.value = dados.liderBio || '';
+        bioInput.addEventListener('input', () => setDirty(true));
+        wrapBio.appendChild(bioInput); grid.appendChild(wrapBio);
+
+        const wrapFoto = document.createElement('div'); wrapFoto.className = 'full';
+        wrapFoto.innerHTML = '<label>Foto</label>';
+        wrapFoto.appendChild(makeFotoField(dados.foto || ''));
+        grid.appendChild(wrapFoto);
+
+        card.appendChild(grid);
+        list.appendChild(card);
+      });
+    }
+
+    function collectMinisterios() {
+      const result = {};
+      document.querySelectorAll('#ministeriosList .item-card').forEach(card => {
+        const slug = card.dataset.slug;
+        result[slug] = {
+          liderNome: card.querySelector('[data-key="liderNome"]').value.trim(),
+          liderBio: card.querySelector('[data-key="liderBio"]').value.trim(),
+          foto: card.querySelector('.foto-field').dataset.url || '',
+        };
+      });
+      return result;
+    }
+
+    function makePastorItem(value = {}) {
+      const card = document.createElement('div');
+      card.className = 'item-card';
+      const title = document.createElement('h3'); title.className = 'item-title'; title.textContent = 'Pastor(a)';
+      card.appendChild(title);
+      const remove = document.createElement('button');
+      remove.type = 'button'; remove.className = 'remove'; remove.textContent = 'Remover';
+      remove.addEventListener('click', () => { card.remove(); renumberPastores(); setDirty(true); });
+      card.appendChild(remove);
+
+      const grid = document.createElement('div'); grid.className = 'grid';
+      [['nome','Nome',true],['cargo','Cargo (ex.: Pastor Titular)',false]].forEach(([key,label,required]) => {
+        const wrap = document.createElement('div');
+        const labelEl = document.createElement('label'); labelEl.textContent = label; wrap.appendChild(labelEl);
+        const input = document.createElement('input'); input.dataset.key = key; input.required = required; input.value = value[key] || '';
+        input.addEventListener('input', () => setDirty(true));
+        wrap.appendChild(input); grid.appendChild(wrap);
+      });
+      const wrapBio = document.createElement('div'); wrapBio.className = 'full';
+      const labelBio = document.createElement('label'); labelBio.textContent = 'Biografia breve'; wrapBio.appendChild(labelBio);
+      const bioInput = document.createElement('textarea'); bioInput.dataset.key = 'bio'; bioInput.value = value.bio || '';
+      bioInput.addEventListener('input', () => setDirty(true));
+      wrapBio.appendChild(bioInput); grid.appendChild(wrapBio);
+
+      const wrapFoto = document.createElement('div'); wrapFoto.className = 'full';
+      wrapFoto.innerHTML = '<label>Foto</label>';
+      wrapFoto.appendChild(makeFotoField(value.foto || ''));
+      grid.appendChild(wrapFoto);
+
+      card.appendChild(grid);
+      return card;
+    }
+
+    function renderPastores() {
+      const list = document.getElementById('pastoresList'); list.innerHTML = '';
+      (content.pastores || []).forEach(item => list.appendChild(makePastorItem(item)));
+      renumberPastores();
+    }
+
+    function renumberPastores() {
+      document.querySelectorAll('#pastoresList .item-title').forEach((title,index) => { title.textContent = `Pastor(a) ${index + 1}`; });
+    }
+
+    function collectPastores() {
+      return [...document.querySelectorAll('#pastoresList .item-card')].map(card => ({
+        nome: card.querySelector('[data-key="nome"]').value.trim(),
+        cargo: card.querySelector('[data-key="cargo"]').value.trim(),
+        bio: card.querySelector('[data-key="bio"]').value.trim(),
+        foto: card.querySelector('.foto-field').dataset.url || '',
+      }));
+    }
+
     function renumber(type) {
       document.querySelectorAll(`#${type}List .item-title`).forEach((title,index) => {
         const name = type === 'cultos' ? 'Culto' : type === 'mensagens' ? 'Vídeo' : 'Evento';
@@ -209,6 +402,8 @@
     function fillForm() {
       Object.entries(content.geral || {}).forEach(([key,value]) => { const el=document.getElementById(key); if (el) el.value=value || ''; });
       ['cultos','mensagens','eventos'].forEach(renderList);
+      renderMinisterios();
+      renderPastores();
     }
 
     function collectList(type) {
@@ -227,7 +422,8 @@
           destaque_descricao: document.getElementById('destaque_descricao').value.trim(),
           destaque_video: document.getElementById('destaque_video').value.trim()
         },
-        cultos: collectList('cultos'), mensagens: collectList('mensagens'), eventos: collectList('eventos')
+        cultos: collectList('cultos'), mensagens: collectList('mensagens'), eventos: collectList('eventos'),
+        ministerios: collectMinisterios(), pastores: collectPastores()
       };
     }
 
@@ -251,6 +447,11 @@
     document.querySelectorAll('[data-add]').forEach(button => button.addEventListener('click', () => {
       const type = button.dataset.add;
       if (type === 'mensagens' && document.querySelectorAll('#mensagensList .item-card').length >= 3) return alert('São permitidos no máximo três vídeos.');
+      if (type === 'pastores') {
+        if (document.querySelectorAll('#pastoresList .item-card').length >= 12) return alert('São permitidos no máximo 12 pastores.');
+        document.getElementById('pastoresList').appendChild(makePastorItem()); renumberPastores(); setDirty(true);
+        return;
+      }
       document.getElementById(`${type}List`).appendChild(makeItem(type)); renumber(type); setDirty(true);
     }));
 

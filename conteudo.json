@@ -84,5 +84,14 @@
       "desc": "Um encontro para fortalecer relacionamentos, compartilhar experiências e crescer juntos à luz da Palavra de Deus, construindo lares mais saudáveis e felizes.",
       "telefone": ""
     }
-  ]
+  ],
+  "ministerios": {
+    "homens": { "liderNome": "", "liderBio": "", "foto": "" },
+    "jovens": { "liderNome": "", "liderBio": "", "foto": "" },
+    "adolescentes": { "liderNome": "", "liderBio": "", "foto": "" },
+    "mulheres": { "liderNome": "", "liderBio": "", "foto": "" },
+    "casais": { "liderNome": "", "liderBio": "", "foto": "" },
+    "kids": { "liderNome": "", "liderBio": "", "foto": "" }
+  },
+  "pastores": []
 }

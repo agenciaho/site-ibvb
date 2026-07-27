@@ -95,12 +95,13 @@
   <section class="mx-auto max-w-4xl px-6 pb-16 lg:pb-20">
     <h2 class="font-display text-2xl font-bold text-cafe-900">Liderança</h2>
     <div class="reveal hover-lift mt-6 flex flex-col items-center gap-5 rounded-organic border border-creme-300 bg-creme-50 p-8 text-center sm:flex-row sm:text-left">
-      <div class="flex h-28 w-28 shrink-0 items-center justify-center rounded-full bg-verde-100 text-verde-600">
-        <svg class="h-14 w-14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+      <div class="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-full bg-verde-100 text-verde-600">
+        <svg id="liderIcone" class="h-14 w-14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+        <img id="liderFoto" class="hidden h-28 w-28 rounded-full object-cover" alt="" />
       </div>
       <div>
-        <p class="font-display text-lg font-bold text-cafe-900">Nome do(a) líder</p>
-        <p class="mt-1 text-sm italic text-cafe-300">Foto e nome da liderança em breve.</p>
+        <p id="liderNome" class="font-display text-lg font-bold text-cafe-900">Nome do(a) líder</p>
+        <p id="liderBio" class="mt-1 text-sm italic text-cafe-300">Foto e nome da liderança em breve.</p>
       </div>
     </div>
   </section>
@@ -126,6 +127,28 @@
   <script src="footer-loader.js" defer></script>
 
   <script>
+    // Liderança editada no painel /admin
+    (async () => {
+      try {
+        const c = await (await fetch('conteudo.json?v=' + Date.now())).json();
+        const lider = ((c.ministerios || {})['casais']) || {};
+        if (lider.liderNome) document.getElementById('liderNome').textContent = lider.liderNome;
+        if (lider.liderBio) {
+          const bioEl = document.getElementById('liderBio');
+          bioEl.textContent = lider.liderBio;
+          bioEl.classList.remove('italic', 'text-cafe-300');
+          bioEl.classList.add('text-cafe-500');
+        }
+        if (lider.foto) {
+          document.getElementById('liderIcone').classList.add('hidden');
+          const img = document.getElementById('liderFoto');
+          img.src = lider.foto;
+          img.alt = lider.liderNome || 'Liderança do Rede de Casais';
+          img.classList.remove('hidden');
+        }
+      } catch (e) { console.warn('conteudo.json indisponível — usando conteúdo padrão.', e); }
+    })();
+
     const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('revealed'); io.unobserve(e.target); } }), { threshold: 0.12 });
     document.querySelectorAll('.reveal').forEach(el => io.observe(el));
   </script>
