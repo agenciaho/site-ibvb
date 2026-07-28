@@ -1,0 +1,108 @@
+name: Deploy Main
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.2.5
+        env:
+          PROJECT_DIR: ${{ vars.BASE_PATH }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          REPOSITORY_TOKEN: ${{ github.token }}
+          ADMIN_USERNAME_VALUE: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_PASSWORD_VALUE: ${{ secrets.ADMIN_PASSWORD }}
+          ADMIN_PASSWORD_HASH_VALUE: ${{ secrets.ADMIN_PASSWORD_HASH }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          envs: PROJECT_DIR,GITHUB_REPOSITORY,REPOSITORY_TOKEN,ADMIN_USERNAME_VALUE,ADMIN_PASSWORD_VALUE,ADMIN_PASSWORD_HASH_VALUE
+          script: |
+            set -Eeuo pipefail
+
+            if [ -z "${PROJECT_DIR:-}" ]; then
+              echo "BASE_PATH is not configured."
+              exit 1
+            fi
+
+            case "${PROJECT_DIR}" in
+              /*) ;;
+              *)
+                echo "BASE_PATH must be an absolute path."
+                exit 1
+                ;;
+            esac
+
+            if [ -z "${ADMIN_USERNAME_VALUE:-}" ]; then
+              echo "ADMIN_USERNAME is not configured."
+              exit 1
+            fi
+
+            if [ -z "${ADMIN_PASSWORD_VALUE:-}" ] && [ -z "${ADMIN_PASSWORD_HASH_VALUE:-}" ]; then
+              echo "Configure ADMIN_PASSWORD or ADMIN_PASSWORD_HASH."
+              exit 1
+            fi
+
+            echo "📁 Using project directory: ${PROJECT_DIR}"
+            mkdir -p "${PROJECT_DIR}"
+            cd "${PROJECT_DIR}"
+
+            repository_url="https://github.com/${GITHUB_REPOSITORY}.git"
+            auth_header="$(
+              printf 'x-access-token:%s' "${REPOSITORY_TOKEN}" |
+                base64 |
+                tr -d '\n'
+            )"
+
+            echo "📦 Updating code from main..."
+            if [ -d .git ]; then
+              git \
+                -c safe.directory="${PROJECT_DIR}" \
+                -c http.extraheader="AUTHORIZATION: basic ${auth_header}" \
+                fetch --prune "${repository_url}" \
+                "+refs/heads/main:refs/remotes/origin/main"
+            else
+              git \
+                -c http.extraheader="AUTHORIZATION: basic ${auth_header}" \
+                clone --branch main --single-branch "${repository_url}" .
+            fi
+
+            git -c safe.directory="${PROJECT_DIR}" reset --hard origin/main
+
+            echo "🔐 Loading deployment credentials..."
+            export ADMIN_USERNAME="${ADMIN_USERNAME_VALUE}"
+            export ADMIN_PASSWORD="${ADMIN_PASSWORD_VALUE:-}"
+            export ADMIN_PASSWORD_HASH="${ADMIN_PASSWORD_HASH_VALUE:-}"
+
+            trap 'docker compose logs --tail=100' ERR
+
+            echo "🏗️ Building images..."
+            DOCKER_BUILDKIT=1 docker compose build --pull
+
+            echo "🚀 Starting services..."
+            docker compose up -d --force-recreate --remove-orphans
+
+            echo "🩺 Checking services..."
+            docker compose ps
+            docker compose exec -T site \
+              wget --quiet --tries=5 --spider http://127.0.0.1/
+
+            docker image prune -f
+            trap - ERR
+            echo "✅ Deployment completed."
